@@ -875,6 +875,102 @@
             line-height: 1.5;
         }
 
+        /* === IMAGE POSITION CONTROLS === */
+        .image-controls {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(79, 195, 247, 0.04);
+            border: 1px solid rgba(79, 195, 247, 0.08);
+            border-radius: 8px;
+        }
+
+        .image-controls.active {
+            display: block;
+        }
+
+        .image-controls h3 {
+            font-family: 'Teko', sans-serif;
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.8rem;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .slider-row label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            width: 28px;
+            flex-shrink: 0;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--navy-mid);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--brand-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(79, 195, 247, 0.4);
+        }
+
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: none;
+            background: var(--brand-cyan);
+            cursor: pointer;
+        }
+
+        .slider-row .slider-val {
+            font-family: 'Teko', sans-serif;
+            font-size: 0.95rem;
+            color: var(--brand-cyan);
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .slider-reset {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 0.2rem;
+            text-decoration: underline;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        .slider-reset:hover {
+            color: var(--brand-cyan);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -969,6 +1065,27 @@
                         <p>Click or drag to upload a screenshot of your player</p>
                     </div>
                     <input type="file" id="imageInput" accept="image/*" style="display:none">
+                </div>
+
+                <!-- Image position controls -->
+                <div class="image-controls" id="imageControls">
+                    <h3>Adjust Image</h3>
+                    <div class="slider-row">
+                        <label>Size</label>
+                        <input type="range" id="sliderScale" min="50" max="250" value="100" step="1">
+                        <span class="slider-val" id="valScale">100%</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>↔</label>
+                        <input type="range" id="sliderX" min="-120" max="120" value="0" step="1">
+                        <span class="slider-val" id="valX">0</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>↕</label>
+                        <input type="range" id="sliderY" min="-120" max="120" value="0" step="1">
+                        <span class="slider-val" id="valY">0</span>
+                    </div>
+                    <button class="slider-reset" id="resetImagePos">Reset position</button>
                 </div>
 
                 <!-- Actions -->
@@ -1242,8 +1359,50 @@
         const cardName = document.getElementById('cardName');
         const cardTeam = document.getElementById('cardTeam');
 
+        // Image controls
+        const imageControls = document.getElementById('imageControls');
+        const sliderScale = document.getElementById('sliderScale');
+        const sliderX = document.getElementById('sliderX');
+        const sliderY = document.getElementById('sliderY');
+        const valScale = document.getElementById('valScale');
+        const valX = document.getElementById('valX');
+        const valY = document.getElementById('valY');
+
+        function applyImageTransform() {
+            const img = cardImageArea.querySelector('img');
+            if (!img) return;
+            img.style.transform = `translate(${imgX}px, ${imgY}px) scale(${imgScale / 100})`;
+            img.style.transformOrigin = 'center bottom';
+        }
+
+        sliderScale.addEventListener('input', () => {
+            imgScale = parseInt(sliderScale.value);
+            valScale.textContent = imgScale + '%';
+            applyImageTransform();
+        });
+
+        sliderX.addEventListener('input', () => {
+            imgX = parseInt(sliderX.value);
+            valX.textContent = imgX;
+            applyImageTransform();
+        });
+
+        sliderY.addEventListener('input', () => {
+            imgY = parseInt(sliderY.value);
+            valY.textContent = imgY;
+            applyImageTransform();
+        });
+
+        document.getElementById('resetImagePos').addEventListener('click', () => {
+            imgScale = 100; imgX = 0; imgY = 0;
+            sliderScale.value = 100; sliderX.value = 0; sliderY.value = 0;
+            valScale.textContent = '100%'; valX.textContent = '0'; valY.textContent = '0';
+            applyImageTransform();
+        });
+
         let selectedPlayer = null;
         let playerImageUrl = null;
+        let imgScale = 100, imgX = 0, imgY = 0;
 
 
         // --- Autocomplete ---
@@ -1377,7 +1536,8 @@
 
             // Player image
             if (playerImageUrl) {
-                cardImageArea.innerHTML = `<img src="${playerImageUrl}" alt="${p.name}">`;
+                cardImageArea.innerHTML = `<img src="${playerImageUrl}" alt="${p.name}" style="transform-origin:center bottom">`;
+                applyImageTransform();
             } else {
                 cardImageArea.innerHTML = `<div class="card-image-placeholder"><img src="assests/default.png" alt="Default player"></div>`;
             }
@@ -1425,6 +1585,9 @@
             });
             uploadArea.appendChild(clearBtn);
 
+            // Show adjust controls
+            imageControls.classList.add('active');
+
             // Reset so same file can be re-selected
             imageInput.value = '';
 
@@ -1433,10 +1596,14 @@
 
         function clearImage() {
             playerImageUrl = null;
+            imgScale = 100; imgX = 0; imgY = 0;
+            sliderScale.value = 100; sliderX.value = 0; sliderY.value = 0;
+            valScale.textContent = '100%'; valX.textContent = '0'; valY.textContent = '0';
+            imageControls.classList.remove('active');
             uploadArea.classList.remove('has-image');
             uploadArea.innerHTML = `
         <div class="upload-icon">🏒</div>
-        <p>Click or drag to upload a screenshot<br><small>Background will be removed automatically</small></p>
+        <p>Click or drag to upload a screenshot of your player</p>
     `;
             updateCard();
         }

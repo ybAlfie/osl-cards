@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSL Player Cards — Draft Season 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --navy-deep: #0a1628;
+            --navy: #142238;
+            --navy-mid: #1c3054;
+            --brand-blue: #1b6b9e;
+            --brand-cyan: #4fc3f7;
+            --brand-gold: #f5b731;
+            --text-primary: #e8edf4;
+            --text-muted: #7a8da6;
+
+            /* Card rarity palettes */
+            --gold-1: #6b5a1e;
+            --gold-2: #c9a634;
+            --gold-3: #f5d442;
+            --gold-4: #ffe76b;
+            --gold-shine: #fff8c4;
+            --gold-text: #3d2e00;
+            --gold-stat: #4a3800;
+
+            --silver-1: #3d4d5e;
+            --silver-2: #6d8298;
+            --silver-3: #a8bdd0;
+            --silver-4: #c8dae8;
+            --silver-shine: #e8f0f8;
+            --silver-text: #1a2a3a;
+            --silver-stat: #2a3a4a;
+
+            --bronze-1: #3d2415;
+            --bronze-2: #8b5e3c;
+            --bronze-3: #cd7f32;
+            --bronze-4: #e0974a;
+            --bronze-shine: #f0c080;
+            --bronze-text: #2a1a0a;
+            --bronze-stat: #3a2010;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--navy-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === BACKGROUND TEXTURE === */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(27, 107, 158, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245, 183, 49, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* === LAYOUT === */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* === HEADER === */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header-logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 4px 20px rgba(79, 195, 247, 0.2));
+        }
+
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: 0.15em;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .header h1 span {
+            color: var(--brand-gold);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.3rem;
+            font-weight: 500;
+        }
+
+        /* === MAIN LAYOUT === */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        @media (max-width: 800px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* === FORM PANEL === */
+        .panel {
+            background: var(--navy);
+            border: 1px solid rgba(79, 195, 247, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .panel h2 {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--brand-cyan);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 1.4rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            background: var(--navy-deep);
+            border: 1px solid rgba(79, 195, 247, 0.15);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--brand-cyan);
+        }
+
+        .form-group select option {
+            background: var(--navy-deep);
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--navy);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+        }
+
+        .autocomplete-list.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background 0.15s;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: var(--navy-mid);
+            color: var(--brand-cyan);
+        }
+
+        .autocomplete-item .team-hint {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Upload area */
+        .upload-area {
+            border: 2px dashed rgba(79, 195, 247, 0.2);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--brand-cyan);
+            background: rgba(79, 195, 247, 0.03);
+        }
+
+        .upload-area.has-image {
+            padding: 0.8rem;
+            border-style: solid;
+            border-color: rgba(79, 195, 247, 0.15);
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        .upload-area p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .upload-preview {
+            max-height: 180px;
+            border-radius: 6px;
+            object-fit: contain;
+        }
+
+        .upload-clear {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Processing indicator */
+        .processing-bar {
+            display: none;
+            margin-top: 0.8rem;
+            padding: 0.6rem 1rem;
+            background: rgba(79, 195, 247, 0.08);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--brand-cyan);
+            text-align: center;
+        }
+
+        .processing-bar.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            border-top-color: var(--brand-cyan);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.4rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.6rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Teko', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand-cyan), var(--brand-blue));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(79, 195, 247, 0.25);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--brand-gold), #e0a020);
+            color: #1a1000;
+            box-shadow: 0 4px 20px rgba(245, 183, 49, 0.25);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Stats preview table */
+        .stats-preview {
+            display: none;
+            margin-top: 1.2rem;
+            padding: 1rem;
+            background: rgba(79, 195, 247, 0.04);
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.08);
+        }
+
+        .stats-preview.active {
+            display: block;
+        }
+
+        .stats-preview h3 {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.1rem;
+            color: var(--brand-gold);
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.3rem 1.5rem;
+            font-size: 0.88rem;
+        }
+
+        .stats-grid .stat-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stats-grid .stat-label {
+            color: var(--text-muted);
+        }
+
+        .stats-grid .stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* === CARD PREVIEW PANEL === */
+        .card-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* =========================================== */
+        /* ===  FIFA SHIELD SHAPE — SVG CLIP PATH  === */
+        /* =========================================== */
+
+        .card-clip-wrapper {
+            width: 340px;
+            height: 500px;
+            position: relative;
+            filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.5));
+        }
+
+        .player-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            clip-path: url(#cardShield);
+            font-family: 'Teko', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Rarity backgrounds — warm tones matching FIFA style */
+        .player-card.rarity-gold {
+            background: linear-gradient(165deg, #c9a634 0%, #e8cc4a 15%, #d4b83c 25%, #c9a634 40%, #b8952c 55%, #d4b83c 70%, #e8cc4a 85%, #c9a634 100%);
+        }
+
+        .player-card.rarity-silver {
+            background: linear-gradient(165deg, #7a8fa3 0%, #9ab0c4 15%, #8a9fb5 25%, #7a8fa3 40%, #6a7f95 55%, #8a9fb5 70%, #9ab0c4 85%, #7a8fa3 100%);
+        }
+
+        .player-card.rarity-bronze {
+            background: linear-gradient(165deg, #8b6940 0%, #b08550 15%, #9a7548 25%, #8b6940 40%, #7a5d38 55%, #9a7548 70%, #b08550 85%, #8b6940 100%);
+        }
+
+        /* Decorative diagonal streaks */
+        .card-streaks {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card-streaks::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: 10%;
+            width: 120%;
+            height: 60%;
+            transform: rotate(-25deg);
+            background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.06) 20%, rgba(255, 255, 255, 0.12) 40%, rgba(255, 255, 255, 0.06) 60%, transparent 100%);
+        }
+
+        .card-streaks::after {
+            content: '';
+            position: absolute;
+            top: 5%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+        }
+
+        /* Diagonal accent lines */
+        .card-diagonals {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .rarity-gold .card-diagonals::before,
+        .rarity-gold .card-diagonals::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(255, 235, 140, 0.3), transparent);
+            height: 2px;
+            width: 75%;
+        }
+
+        .rarity-gold .card-diagonals::before {
+            top: 15%;
+            left: -5%;
+            transform: rotate(-28deg);
+        }
+
+        .rarity-gold .card-diagonals::after {
+            top: 25%;
+            left: 5%;
+            transform: rotate(-28deg);
+        }
+
+        .rarity-silver .card-diagonals::before,
+        .rarity-silver .card-diagonals::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(200, 220, 240, 0.25), transparent);
+            height: 2px;
+            width: 75%;
+        }
+
+        .rarity-silver .card-diagonals::before {
+            top: 15%;
+            left: -5%;
+            transform: rotate(-28deg);
+        }
+
+        .rarity-silver .card-diagonals::after {
+            top: 25%;
+            left: 5%;
+            transform: rotate(-28deg);
+        }
+
+        .rarity-bronze .card-diagonals::before,
+        .rarity-bronze .card-diagonals::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(220, 180, 120, 0.25), transparent);
+            height: 2px;
+            width: 75%;
+        }
+
+        .rarity-bronze .card-diagonals::before {
+            top: 15%;
+            left: -5%;
+            transform: rotate(-28deg);
+        }
+
+        .rarity-bronze .card-diagonals::after {
+            top: 25%;
+            left: 5%;
+            transform: rotate(-28deg);
+        }
+
+        /* Dot pattern */
+        .card-dots {
+            position: absolute;
+            top: 10%;
+            right: 5%;
+            width: 25%;
+            height: 25%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.12;
+            background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+
+        .rarity-gold .card-dots {
+            color: #5a4a10;
+        }
+
+        .rarity-silver .card-dots {
+            color: #3a4a5a;
+        }
+
+        .rarity-bronze .card-dots {
+            color: #4a3018;
+        }
+
+        /* === CARD CONTENT === */
+
+        .card-top-left {
+            position: absolute;
+            top: 60px;
+            left: 32px;
+            z-index: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-overall {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem;
+            line-height: 0.85;
+            letter-spacing: -0.02em;
+        }
+
+        .rarity-gold .card-overall {
+            color: #3d2e00;
+        }
+
+        .rarity-silver .card-overall {
+            color: #1a2a3a;
+        }
+
+        .rarity-bronze .card-overall {
+            color: #2a1a0a;
+        }
+
+        .card-season {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 0px;
+            line-height: 1.1;
+        }
+
+        .rarity-gold .card-season {
+            color: rgba(61, 46, 0, 0.6);
+        }
+
+        .rarity-silver .card-season {
+            color: rgba(26, 42, 58, 0.5);
+        }
+
+        .rarity-bronze .card-season {
+            color: rgba(42, 26, 10, 0.5);
+        }
+
+        .card-logo {
+            width: 56px;
+            height: auto;
+            margin-top: 6px;
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
+        }
+
+        .card-image-area {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-42%);
+            width: 280px;
+            height: 280px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 3;
+            overflow: hidden;
+        }
+
+        .card-image-area img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .card-image-placeholder {
+            width: 200px;
+            height: 240px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+        }
+
+        .card-image-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            opacity: 0.2;
+            filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .rarity-gold .card-image-placeholder {
+            color: #3d2e00;
+        }
+
+        .rarity-silver .card-image-placeholder {
+            color: #1a2a3a;
+        }
+
+        .rarity-bronze .card-image-placeholder {
+            color: #2a1a0a;
+        }
+
+        /* Gold trim bar above name */
+        .card-trim {
+            position: absolute;
+            top: 315px;
+            left: 12%;
+            right: 12%;
+            height: 3px;
+            z-index: 4;
+            border-radius: 2px;
+        }
+
+        .rarity-gold .card-trim {
+            background: linear-gradient(90deg, transparent, rgba(90, 70, 10, 0.5), rgba(90, 70, 10, 0.7), rgba(90, 70, 10, 0.5), transparent);
+        }
+
+        .rarity-silver .card-trim {
+            background: linear-gradient(90deg, transparent, rgba(40, 60, 80, 0.4), rgba(40, 60, 80, 0.6), rgba(40, 60, 80, 0.4), transparent);
+        }
+
+        .rarity-bronze .card-trim {
+            background: linear-gradient(90deg, transparent, rgba(70, 45, 20, 0.4), rgba(70, 45, 20, 0.6), rgba(70, 45, 20, 0.4), transparent);
+        }
+
+        /* Player name + team */
+        .card-info {
+            position: absolute;
+            top: 325px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 4;
+        }
+
+        .card-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4rem;
+            letter-spacing: 0.06em;
+            line-height: 1;
+        }
+
+        .rarity-gold .card-name {
+            color: #3d2e00;
+        }
+
+        .rarity-silver .card-name {
+            color: #1a2a3a;
+        }
+
+        .rarity-bronze .card-name {
+            color: #2a1a0a;
+        }
+
+        .card-team {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-top: -2px;
+            margin-bottom: 6px;
+        }
+
+        .rarity-gold .card-team {
+            color: rgba(61, 46, 0, 0.5);
+        }
+
+        .rarity-silver .card-team {
+            color: rgba(26, 42, 58, 0.4);
+        }
+
+        .rarity-bronze .card-team {
+            color: rgba(42, 26, 10, 0.4);
+        }
+
+        /* === STATS: single row === */
+        .card-stats-section {
+            position: absolute;
+            bottom: 52px;
+            left: 18%;
+            right: 18%;
+            z-index: 4;
+        }
+
+        .card-stats-top-divider {
+            height: 1px;
+            margin-bottom: 10px;
+            margin-top: 4px;
+        }
+
+        .rarity-gold .card-stats-top-divider {
+            background: rgba(61, 46, 0, 0.3);
+        }
+
+        .rarity-silver .card-stats-top-divider {
+            background: rgba(26, 42, 58, 0.25);
+        }
+
+        .rarity-bronze .card-stats-top-divider {
+            background: rgba(42, 26, 10, 0.25);
+        }
+
+        .card-stats-grid {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+        }
+
+        .card-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .card-stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.3rem;
+            line-height: 1;
+        }
+
+        .rarity-gold .card-stat-value {
+            color: #3d2e00;
+        }
+
+        .rarity-silver .card-stat-value {
+            color: #1a2a3a;
+        }
+
+        .rarity-bronze .card-stat-value {
+            color: #2a1a0a;
+        }
+
+        .card-stat-label {
+            font-family: 'Teko', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            margin-top: -2px;
+        }
+
+        .rarity-gold .card-stat-label {
+            color: rgba(61, 46, 0, 0.55);
+        }
+
+        .rarity-silver .card-stat-label {
+            color: rgba(26, 42, 58, 0.45);
+        }
+
+        .rarity-bronze .card-stat-label {
+            color: rgba(42, 26, 10, 0.45);
+        }
+
+        /* Empty state */
+        .card-empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 7;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .card-empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.2;
+        }
+
+        .card-empty-state p {
+            color: rgba(61, 46, 0, 0.35);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(79, 195, 247, 0.06);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .footer a {
+            color: var(--brand-cyan);
+            text-decoration: none;
+        }
+
+        /* Notification toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--navy-mid);
+            color: var(--text-primary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(79, 195, 247, 0.15);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <svg width="0" height="0" style="position:absolute;">
+        <defs>
+            <clipPath id="cardShield" clipPathUnits="objectBoundingBox" transform="scale(0.003741, 0.002340)">
+                <path
+                    d="M265.3 53.9a33.3 33.3 0 0 1-17.8-5.5 32 32 0 0 1-13.7-22.9c-.2-1.1-.4-2.3-.4-3.4 0-1.3-1-1.5-1.8-1.9a163 163 0 0 0-31-11.6A257.3 257.3 0 0 0 133.7 0a254.9 254.9 0 0 0-67.1 8.7 170 170 0 0 0-31 11.6c-.8.4-1.8.6-1.8 1.9 0 1.1-.2 2.3-.4 3.4a32.4 32.4 0 0 1-13.7 22.9A33.8 33.8 0 0 1 2 53.9c-1.5.1-2.1.4-2 2v293.9c0 3.3 0 6.6.4 9.9a22 22 0 0 0 7.9 14.4c3.8 3.2 8.3 5.3 13 6.8 12.4 3.9 24.8 7.5 37.2 11.5a388.7 388.7 0 0 1 50 19.4 88.7 88.7 0 0 1 25 15.5v.1-.1c7.2-7 16.1-11.3 25-15.5a427 427 0 0 1 50-19.4l37.2-11.5c4.7-1.5 9.1-3.5 13-6.8 4.5-3.8 7.2-8.5 7.9-14.4.4-3.3.4-6.6.4-9.9V231.6 60.5v-4.6c.4-1.6-.3-1.9-1.7-2z" />
+            </clipPath>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <img src="assests/logo.png" alt="OSL Logo" class="header-logo">
+            <h1>PLAYER <span>CARDS</span></h1>
+            <p>Oceanic Slapshot League — Draft Season 1</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left: Controls -->
+            <div class="panel">
+                <h2>Build Your Card</h2>
+
+                <!-- Player Name -->
+                <div class="form-group">
+                    <label>Player Name</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="playerNameInput" placeholder="Start typing a player name..."
+                            autocomplete="off">
+                        <div class="autocomplete-list" id="autocompleteList"></div>
+                    </div>
+                </div>
+
+                <!-- Stats preview -->
+                <div class="stats-preview" id="statsPreview">
+                    <h3 id="statsPreviewTitle">Player Stats</h3>
+                    <div class="stats-grid" id="statsPreviewGrid"></div>
+                </div>
+
+                <!-- Player Image Upload -->
+                <div class="form-group">
+                    <label>Player Image</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">🏒</div>
+                        <p>Click or drag to upload a screenshot<br><small>Background will be removed
+                                automatically</small></p>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display:none">
+                    <div class="processing-bar" id="processingBar">
+                        <span class="spinner"></span> <span id="processingText">Removing background...</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="btn-group">
+                    <button class="btn btn-gold" id="downloadBtn" disabled>
+                        ⬇ Download Card
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Card Preview -->
+            <div class="card-panel">
+                <div class="card-clip-wrapper" id="cardWrapper">
+                    <div class="player-card rarity-gold" id="playerCard">
+                        <div class="card-streaks"></div>
+                        <div class="card-diagonals"></div>
+                        <div class="card-dots"></div>
+
+                        <!-- Rating + meta -->
+                        <div class="card-top-left" id="cardTop">
+                            <div class="card-overall" id="cardOverall">?</div>
+                            <div class="card-season">Draft S1</div>
+                            <img src="assests/logo.png" alt="OSL" class="card-logo">
+                        </div>
+
+                        <!-- Player image -->
+                        <div class="card-image-area" id="cardImageArea">
+                            <div class="card-image-placeholder"><img src="assests/default.png" alt="Default player">
+                            </div>
+                        </div>
+
+                        <!-- Gold trim bar -->
+                        <div class="card-trim" id="cardDivider"></div>
+
+                        <!-- Name + team -->
+                        <div class="card-info" id="cardInfo">
+                            <div class="card-name" id="cardName">PLAYER</div>
+                            <div class="card-team" id="cardTeam">TEAM NAME</div>
+                        </div>
+
+                        <!-- Stats: single row -->
+                        <div class="card-stats-section" id="cardStats">
+                            <div class="card-stats-top-divider"></div>
+                            <div class="card-stats-grid">
+                                <div class="card-stat-item"><span class="card-stat-value" id="statSHO">?</span><span
+                                        class="card-stat-label">SHO</span></div>
+                                <div class="card-stat-item"><span class="card-stat-value" id="statAST">?</span><span
+                                        class="card-stat-label">AST</span></div>
+                                <div class="card-stat-item"><span class="card-stat-value" id="statPAS">?</span><span
+                                        class="card-stat-label">PAS</span></div>
+                                <div class="card-stat-item"><span class="card-stat-value" id="statDEF">?</span><span
+                                        class="card-stat-label">DEF</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Stats from <a href="https://oslstats.com/seasons/DS1/leagues/Draft/stats" target="_blank">OSL Stats</a>
+            </p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ========================================
+        // DATA & SCORING ENGINE
+        // ========================================
+
+        const STATS_DATA = {
+            season: "Draft S1",
+            players: [
+                { name: "Dwarf", team: "Total Hockey Renewed Subscription", gp: 15, pp: 44, g: 43, a: 36, sv: 88, sh: 83, blk: 129, pas: 254 },
+                { name: "silly13sausage", team: "Sausage Gang", gp: 17, pp: 51, g: 53, a: 30, sv: 25, sh: 132, blk: 117, pas: 319 },
+                { name: "Moses", team: "Pleasing Puckers", gp: 13, pp: 38, g: 44, a: 35, sv: 23, sh: 94, blk: 106, pas: 290 },
+                { name: "Chabana", team: "Team Chabana", gp: 16, pp: 46, g: 45, a: 31, sv: 18, sh: 108, blk: 106, pas: 402 },
+                { name: "Benny", team: "Joey Fan Club", gp: 15, pp: 45, g: 41, a: 29, sv: 29, sh: 89, blk: 113, pas: 424 },
+                { name: "zuza", team: "Joey Fan Club", gp: 15, pp: 45, g: 37, a: 34, sv: 14, sh: 99, blk: 83, pas: 391 },
+                { name: "Eagle", team: "Bring Back Pubs", gp: 15, pp: 44, g: 21, a: 19, sv: 114, sh: 45, blk: 117, pas: 269 },
+                { name: "Daddy Kermit", team: "Total Hockey Renewed Subscription", gp: 15, pp: 44, g: 40, a: 27, sv: 33, sh: 66, blk: 62, pas: 266 },
+                { name: "alfie", team: "Team Chabana", gp: 16, pp: 46, g: 36, a: 27, sv: 33, sh: 70, blk: 81, pas: 302 },
+                { name: "Liebe", team: "Pleasing Puckers", gp: 12, pp: 36, g: 47, a: 21, sv: 7, sh: 86, blk: 40, pas: 329 },
+                { name: "Mayn", team: "The Mayniacs", gp: 15, pp: 44, g: 24, a: 22, sv: 58, sh: 61, blk: 113, pas: 256 },
+                { name: "Haelnorr", team: "Bring Back Pubs", gp: 15, pp: 44, g: 32, a: 19, sv: 30, sh: 69, blk: 114, pas: 259 },
+                { name: "Dandy", team: "Total Hockey Renewed Subscription", gp: 15, pp: 40, g: 28, a: 28, sv: 30, sh: 59, blk: 88, pas: 284 },
+                { name: "Kyle", team: "Dixen Spiders", gp: 13, pp: 39, g: 30, a: 18, sv: 40, sh: 70, blk: 77, pas: 215 },
+                { name: "Turgulu", team: "Team Turgulu", gp: 12, pp: 35, g: 35, a: 7, sv: 50, sh: 56, blk: 93, pas: 250 },
+                { name: "MassiveLegend", team: "Sausage Gang", gp: 17, pp: 48, g: 19, a: 24, sv: 49, sh: 63, blk: 83, pas: 288 },
+                { name: "hqckk", team: "Dixen Spiders", gp: 12, pp: 36, g: 32, a: 14, sv: 26, sh: 74, blk: 49, pas: 242 },
+                { name: "Munby", team: "Samuel Berry", gp: 11, pp: 31, g: 25, a: 17, sv: 38, sh: 48, blk: 112, pas: 204 },
+                { name: "zenonix", team: "The Mayniacs", gp: 15, pp: 44, g: 15, a: 24, sv: 59, sh: 36, blk: 120, pas: 243 },
+                { name: "Chebs", team: "Free Agent", gp: 16, pp: 46, g: 16, a: 11, sv: 70, sh: 33, blk: 121, pas: 203 },
+                { name: "jhili", team: "Dixen Spiders", gp: 11, pp: 33, g: 12, a: 29, sv: 37, sh: 38, blk: 121, pas: 202 },
+                { name: "Kaiden", team: "Joey Fan Club", gp: 14, pp: 42, g: 21, a: 25, sv: 25, sh: 61, blk: 49, pas: 371 },
+                { name: "Forge", team: "Pleasing Puckers", gp: 11, pp: 32, g: 19, a: 29, sv: 17, sh: 47, blk: 55, pas: 228 },
+                { name: "Shrek", team: "Sausage Gang", gp: 16, pp: 40, g: 22, a: 21, sv: 14, sh: 46, blk: 90, pas: 225 },
+                { name: "Gecko", team: "Samuel Berry", gp: 9, pp: 27, g: 23, a: 18, sv: 15, sh: 54, blk: 50, pas: 216 },
+                { name: "Nefarious Ape", team: "The Mayniacs", gp: 13, pp: 38, g: 29, a: 8, sv: 7, sh: 58, blk: 56, pas: 230 },
+                { name: "Nananana", team: "Team Turgulu", gp: 12, pp: 33, g: 12, a: 18, sv: 33, sh: 24, blk: 86, pas: 175 },
+                { name: "Badza", team: "Team Chabana", gp: 11, pp: 31, g: 13, a: 15, sv: 20, sh: 33, blk: 70, pas: 228 },
+                { name: "Bogg", team: "Samuel Berry", gp: 10, pp: 29, g: 14, a: 15, sv: 9, sh: 24, blk: 30, pas: 153 },
+                { name: "coop", team: "Bring Back Pubs", gp: 9, pp: 27, g: 15, a: 7, sv: 7, sh: 28, blk: 33, pas: 151 },
+                { name: "Sinko", team: "Team Turgulu", gp: 10, pp: 28, g: 7, a: 13, sv: 11, sh: 23, blk: 50, pas: 150 },
+                { name: "PMA Advisor", team: "Sausage Gang", gp: 7, pp: 14, g: 8, a: 10, sv: 9, sh: 17, blk: 28, pas: 86 },
+                { name: "Lumids", team: "Team Chabana", gp: 4, pp: 9, g: 3, a: 6, sv: 3, sh: 14, blk: 16, pas: 53 },
+                { name: "slowbadkiller", team: "Team Turgulu", gp: 4, pp: 9, g: 4, a: 2, sv: 7, sh: 8, blk: 25, pas: 18 },
+                { name: "SkdragoN", team: "Samuel Berry", gp: 5, pp: 11, g: 1, a: 4, sv: 10, sh: 7, blk: 15, pas: 32 },
+                { name: "GGUDJ", team: "Total Hockey Renewed Subscription", gp: 3, pp: 4, g: 2, a: 5, sv: 2, sh: 5, blk: 11, pas: 20 },
+                { name: "Oak", team: "Joey Fan Club", gp: 1, pp: 3, g: 2, a: 3, sv: 1, sh: 5, blk: 6, pas: 18 },
+                { name: "MagpieRL", team: "Bring Back Pubs", gp: 2, pp: 5, g: 1, a: 1, sv: 2, sh: 1, blk: 6, pas: 16 },
+                { name: "Pogeys", team: "Pleasing Puckers", gp: 1, pp: 2, g: 0, a: 0, sv: 1, sh: 1, blk: 4, pas: 13 },
+                { name: "hope", team: "The Mayniacs", gp: 1, pp: 3, g: 0, a: 0, sv: 0, sh: 0, blk: 2, pas: 11 }
+            ]
+        };
+
+        // 4-stat weights: SHO 30%, AST 20%, PAS 20%, DEF 30%
+        const WEIGHTS = { SHO: 0.30, AST: 0.20, PAS: 0.20, DEF: 0.30 };
+
+        // Minimum periods played for full (qualified) rating
+        const MIN_PERIODS = 10;
+
+        // Specialist boost: if top stat exceeds avg of others by this much, boost OVR
+        const SPECIALIST_THRESHOLD = 15;
+        const SPECIALIST_BLEND = 0.3;
+
+        /**
+         * Compute per-period raw values for each player
+         */
+        function computePerPeriod(players) {
+            return players.map(p => {
+                const pp = p.pp || 1;
+                return {
+                    ...p,
+                    raw: {
+                        SHO: p.g / pp,
+                        AST: p.a / pp,
+                        PAS: p.pas / pp,
+                        DEF: ((p.sv * 2) + p.blk) / pp  // saves weighted double
+                    }
+                };
+            });
+        }
+
+        /**
+         * Percentile rank helper: returns array of 0-1 percentiles
+         */
+        function percentileRank(values) {
+            const n = values.length;
+            const indexed = values.map((v, i) => ({ val: v, idx: i }));
+            indexed.sort((a, b) => a.val - b.val);
+            const ranks = new Array(n);
+            let i = 0;
+            while (i < indexed.length) {
+                let j = i;
+                while (j < indexed.length && indexed[j].val === indexed[i].val) j++;
+                const avgRank = (i + j - 1) / 2;
+                for (let k = i; k < j; k++) ranks[indexed[k].idx] = avgRank;
+                i = j;
+            }
+            return ranks.map(r => r / (n - 1));
+        }
+
+        /**
+         * Full scoring pipeline:
+         * 1. Percentile-rank each stat → 50-99
+         * 2. Weighted base score + specialist boost
+         * 3. Percentile-rank the overall among qualified players → 50-99
+         * 4. Unqualified players (<10 periods) capped at 69
+         */
+        function computeScores(playersWithRaw) {
+            const stats = ['SHO', 'AST', 'PAS', 'DEF'];
+            const n = playersWithRaw.length;
+            const qualified = playersWithRaw.filter(p => p.pp >= MIN_PERIODS);
+            const unqualified = playersWithRaw.filter(p => p.pp < MIN_PERIODS);
+
+            // 1. Percentile-rank each individual stat across ALL players
+            stats.forEach(stat => {
+                const values = playersWithRaw.map(p => p.raw[stat]);
+                const percentiles = percentileRank(values);
+                playersWithRaw.forEach((p, idx) => {
+                    p[stat] = Math.round(50 + percentiles[idx] * 49);
+                });
+            });
+
+            // 2. Weighted base score
+            playersWithRaw.forEach(p => {
+                p.baseWeighted = p.SHO * WEIGHTS.SHO + p.AST * WEIGHTS.AST + p.PAS * WEIGHTS.PAS + p.DEF * WEIGHTS.DEF;
+            });
+
+            // 3. Specialist boost
+            playersWithRaw.forEach(p => {
+                const statValues = [p.SHO, p.AST, p.PAS, p.DEF];
+                const topStat = Math.max(...statValues);
+                const avgOthers = (statValues.reduce((a, b) => a + b, 0) - topStat) / (statValues.length - 1);
+                const gap = topStat - avgOthers;
+                if (gap >= SPECIALIST_THRESHOLD) {
+                    const bonusStrength = Math.min((gap - SPECIALIST_THRESHOLD) / 20, 1) * SPECIALIST_BLEND;
+                    p.boostedWeighted = p.baseWeighted + (topStat - p.baseWeighted) * bonusStrength;
+                } else {
+                    p.boostedWeighted = p.baseWeighted;
+                }
+            });
+
+            // 4. Percentile-rank overall among QUALIFIED players only
+            const qualifiedBoosted = qualified.map(p => p.boostedWeighted);
+            const qualifiedPercentiles = percentileRank(qualifiedBoosted);
+            qualified.forEach((p, idx) => {
+                p.OVR = Math.round(50 + qualifiedPercentiles[idx] * 49);
+            });
+
+            // 5. Unqualified players: true relative rating capped at 69
+            unqualified.forEach(p => {
+                const minQ = Math.min(...qualifiedBoosted);
+                const maxQ = Math.max(...qualifiedBoosted);
+                const range = maxQ - minQ || 1;
+                const relativePos = (p.boostedWeighted - minQ) / range;
+                const projectedOVR = Math.round(50 + relativePos * 49);
+                p.OVR = Math.max(50, Math.min(69, projectedOVR));
+
+                // Cap individual stats at 69
+                ['SHO', 'AST', 'PAS', 'DEF'].forEach(stat => {
+                    p[stat] = Math.min(69, p[stat]);
+                });
+                p.unqualified = true;
+            });
+
+            // 6. Assign rarity
+            playersWithRaw.forEach(p => {
+                if (p.OVR >= 80) p.rarity = 'gold';
+                else if (p.OVR >= 65) p.rarity = 'silver';
+                else p.rarity = 'bronze';
+            });
+
+            return playersWithRaw;
+        }
+
+        // Compute all scores on load
+        const scoredPlayers = computeScores(computePerPeriod(STATS_DATA.players));
+
+        // Build lookup by name (case-insensitive)
+        const playerLookup = {};
+        scoredPlayers.forEach(p => {
+            playerLookup[p.name.toLowerCase()] = p;
+        });
+
+
+        // ========================================
+        // UI LOGIC
+        // ========================================
+
+        const nameInput = document.getElementById('playerNameInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const processingBar = document.getElementById('processingBar');
+        const processingText = document.getElementById('processingText');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statsPreview = document.getElementById('statsPreview');
+        const statsPreviewTitle = document.getElementById('statsPreviewTitle');
+        const statsPreviewGrid = document.getElementById('statsPreviewGrid');
+
+        // Card elements
+        const playerCard = document.getElementById('playerCard');
+        const cardTop = document.getElementById('cardTop');
+        const cardImageArea = document.getElementById('cardImageArea');
+        const cardDivider = document.getElementById('cardDivider');
+        const cardInfo = document.getElementById('cardInfo');
+        const cardStats = document.getElementById('cardStats');
+        const cardOverall = document.getElementById('cardOverall');
+        const cardName = document.getElementById('cardName');
+        const cardTeam = document.getElementById('cardTeam');
+
+        let selectedPlayer = null;
+        let playerImageUrl = null; // final image (after bg removal or raw)
+        let bgRemovalAvailable = false;
+
+        // Check if @imgly/background-removal is available
+        // We'll load it dynamically
+        let removeBackground = null;
+
+        async function initBgRemoval() {
+            try {
+                // index.mjs is the ESM entrypoint for this package
+                const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs');
+                removeBackground = module.removeBackground || module.default;
+                bgRemovalAvailable = !!(removeBackground);
+                console.log('Background removal loaded successfully', removeBackground);
+            } catch (e) {
+                console.warn('Background removal library not available. Images will be used as-is.', e);
+                bgRemovalAvailable = false;
+            }
+        }
+
+        initBgRemoval();
+
+
+        // --- Autocomplete ---
+        let autocompleteFocusIndex = -1;
+
+        function updateActiveAutocompleteItem(items) {
+            items.forEach(item => item.classList.remove('selected'));
+            if (autocompleteFocusIndex > -1 && autocompleteFocusIndex < items.length) {
+                items[autocompleteFocusIndex].classList.add('selected');
+                items[autocompleteFocusIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        nameInput.addEventListener('input', () => {
+            autocompleteFocusIndex = -1;
+            const val = nameInput.value.trim().toLowerCase();
+            if (val.length === 0) {
+                autocompleteList.classList.remove('active');
+                return;
+            }
+
+            const matches = scoredPlayers.filter(p =>
+                p.name.toLowerCase().includes(val)
+            ).slice(0, 8);
+
+            if (matches.length === 0) {
+                autocompleteList.classList.remove('active');
+                return;
+            }
+
+            autocompleteList.innerHTML = matches.map(p =>
+                `<div class="autocomplete-item" data-name="${p.name}">
+            ${p.name} <span class="team-hint">${p.team}</span>
+        </div>`
+            ).join('');
+            autocompleteList.classList.add('active');
+
+            autocompleteList.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    nameInput.value = item.dataset.name;
+                    autocompleteList.classList.remove('active');
+                    selectPlayer(item.dataset.name);
+                });
+            });
+        });
+
+        nameInput.addEventListener('keydown', (e) => {
+            const items = autocompleteList.querySelectorAll('.autocomplete-item');
+            if (e.key === 'ArrowDown') {
+                autocompleteFocusIndex++;
+                if (autocompleteFocusIndex >= items.length) autocompleteFocusIndex = 0;
+                updateActiveAutocompleteItem(items);
+                e.preventDefault();
+            } else if (e.key === 'ArrowUp') {
+                autocompleteFocusIndex--;
+                if (autocompleteFocusIndex < 0) autocompleteFocusIndex = items.length - 1;
+                updateActiveAutocompleteItem(items);
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                if (autocompleteFocusIndex > -1 && items.length > 0) {
+                    items[autocompleteFocusIndex].click();
+                    e.preventDefault();
+                } else {
+                    const val = nameInput.value.trim().toLowerCase();
+                    if (playerLookup[val]) {
+                        autocompleteList.classList.remove('active');
+                        selectPlayer(playerLookup[val].name);
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                autocompleteList.classList.remove('active');
+            }
+        });
+
+
+        // --- Select Player ---
+        function selectPlayer(name) {
+            const p = playerLookup[name.toLowerCase()];
+            if (!p) return;
+
+            selectedPlayer = p;
+            nameInput.value = p.name;
+            updateCard();
+            updateStatsPreview();
+            downloadBtn.disabled = false;
+        }
+
+        function updateStatsPreview() {
+            if (!selectedPlayer) return;
+            const p = selectedPlayer;
+
+            statsPreviewTitle.textContent = `${p.name} — Raw Stats (${p.pp} periods)`;
+            statsPreviewGrid.innerHTML = `
+        <div class="stat-row"><span class="stat-label">Goals</span><span class="stat-value">${p.g}</span></div>
+        <div class="stat-row"><span class="stat-label">Assists</span><span class="stat-value">${p.a}</span></div>
+        <div class="stat-row"><span class="stat-label">Shots</span><span class="stat-value">${p.sh}</span></div>
+        <div class="stat-row"><span class="stat-label">Saves</span><span class="stat-value">${p.sv}</span></div>
+        <div class="stat-row"><span class="stat-label">Blocks</span><span class="stat-value">${p.blk}</span></div>
+        <div class="stat-row"><span class="stat-label">Passes</span><span class="stat-value">${p.pas}</span></div>
+        <div class="stat-row"><span class="stat-label">Games</span><span class="stat-value">${p.gp}</span></div>
+        <div class="stat-row"><span class="stat-label">Rarity</span><span class="stat-value" style="text-transform:capitalize">${p.rarity}</span></div>
+    `;
+            statsPreview.classList.add('active');
+        }
+
+
+        // --- Update Card ---
+        function updateCard() {
+            if (!selectedPlayer) return;
+            const p = selectedPlayer;
+
+            // Rarity class
+            playerCard.className = `player-card rarity-${p.rarity}`;
+
+            // Overall
+            cardOverall.textContent = p.OVR;
+
+            // Name + team
+            cardName.textContent = p.name.toUpperCase();
+            cardTeam.textContent = p.team.toUpperCase();
+
+            // Individual stats
+            document.getElementById('statSHO').textContent = p.SHO;
+            document.getElementById('statAST').textContent = p.AST;
+            document.getElementById('statPAS').textContent = p.PAS;
+            document.getElementById('statDEF').textContent = p.DEF;
+
+            // Player image
+            if (playerImageUrl) {
+                cardImageArea.innerHTML = `<img src="${playerImageUrl}" alt="${p.name}">`;
+            } else {
+                cardImageArea.innerHTML = `<div class="card-image-placeholder"><img src="assests/default.png" alt="Default player"></div>`;
+            }
+        }
+
+
+        // --- Image Upload ---
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--brand-cyan)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '';
+            if (e.dataTransfer.files.length) handleImageFile(e.dataTransfer.files[0]);
+        });
+
+        imageInput.addEventListener('change', () => {
+            if (imageInput.files.length) handleImageFile(imageInput.files[0]);
+        });
+
+        async function handleImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload an image file');
+                return;
+            }
+
+            const originalUrl = URL.createObjectURL(file);
+
+            // Helper: set the upload preview and add the clear button
+            function setUploadPreview(imgUrl) {
+                uploadArea.classList.add('has-image');
+                uploadArea.innerHTML = `<img src="${imgUrl}" class="upload-preview" alt="Preview">`;
+                const clearBtn = document.createElement('button');
+                clearBtn.className = 'upload-clear';
+                clearBtn.textContent = '✕';
+                clearBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    clearImage();
+                });
+                uploadArea.appendChild(clearBtn);
+            }
+
+            if (bgRemovalAvailable && removeBackground) {
+                // Show original while processing
+                setUploadPreview(originalUrl);
+                processingBar.classList.add('active');
+                processingText.textContent = 'Removing background (this may take a moment on first load)...';
+
+                try {
+                    const blob = await removeBackground(file);
+                    playerImageUrl = URL.createObjectURL(blob);
+                    // Update the preview to the bg-removed version
+                    setUploadPreview(playerImageUrl);
+                    processingText.textContent = 'Background removed! ✓';
+                    setTimeout(() => processingBar.classList.remove('active'), 1500);
+                    showToast('Background removed successfully');
+                } catch (err) {
+                    console.error('BG removal failed:', err);
+                    playerImageUrl = originalUrl;
+                    processingText.textContent = 'Background removal failed — using original image';
+                    setTimeout(() => processingBar.classList.remove('active'), 2000);
+                    showToast('Using original image');
+                }
+            } else {
+                // No bg removal — use image as-is
+                playerImageUrl = originalUrl;
+                setUploadPreview(originalUrl);
+            }
+
+            // Reset so same file can be re-selected
+            imageInput.value = '';
+
+            updateCard();
+        }
+
+        function clearImage() {
+            playerImageUrl = null;
+            uploadArea.classList.remove('has-image');
+            uploadArea.innerHTML = `
+        <div class="upload-icon">🏒</div>
+        <p>Click or drag to upload a screenshot<br><small>Background will be removed automatically</small></p>
+    `;
+            updateCard();
+        }
+
+
+        // --- Download Card ---
+        downloadBtn.addEventListener('click', async () => {
+            if (!selectedPlayer) return;
+
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ Rendering...';
+
+            try {
+                const canvas = await html2canvas(document.getElementById('cardWrapper'), {
+                    backgroundColor: null,
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                });
+
+                const link = document.createElement('a');
+                link.download = `${selectedPlayer.name}_OSL_Card.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast(`Card saved for ${selectedPlayer.name}!`);
+            } catch (err) {
+                console.error('Download failed:', err);
+                showToast('Download failed — try again');
+            }
+
+            downloadBtn.disabled = false;
+            downloadBtn.textContent = '⬇ Download Card';
+        });
+
+
+        // --- Toast ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('visible');
+            setTimeout(() => toast.classList.remove('visible'), 2500);
+        }
+
+        // Log all scores to console for debugging
+        console.table(scoredPlayers.map(p => ({
+            name: p.name, OVR: p.OVR, SHO: p.SHO, AST: p.AST, PAS: p.PAS, DEF: p.DEF, rarity: p.rarity, qualified: !p.unqualified
+        })));
+    </script>
+
+</body>
+
+</html>

@@ -1150,56 +1150,11 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="stats.js"></script>
     <script>
         // ========================================
         // DATA & SCORING ENGINE
         // ========================================
-
-        const STATS_DATA = {
-            season: "Draft S1",
-            players: [
-                { name: "Dwarf", team: "Total Hockey Renewed Subscription", gp: 15, pp: 44, g: 43, a: 36, sv: 88, sh: 83, blk: 129, pas: 254 },
-                { name: "silly13sausage", team: "Sausage Gang", gp: 17, pp: 51, g: 53, a: 30, sv: 25, sh: 132, blk: 117, pas: 319 },
-                { name: "Moses", team: "Pleasing Puckers", gp: 13, pp: 38, g: 44, a: 35, sv: 23, sh: 94, blk: 106, pas: 290 },
-                { name: "Chabana", team: "Team Chabana", gp: 16, pp: 46, g: 45, a: 31, sv: 18, sh: 108, blk: 106, pas: 402 },
-                { name: "Benny", team: "Joey Fan Club", gp: 15, pp: 45, g: 41, a: 29, sv: 29, sh: 89, blk: 113, pas: 424 },
-                { name: "zuza", team: "Joey Fan Club", gp: 15, pp: 45, g: 37, a: 34, sv: 14, sh: 99, blk: 83, pas: 391 },
-                { name: "Eagle", team: "Bring Back Pubs", gp: 15, pp: 44, g: 21, a: 19, sv: 114, sh: 45, blk: 117, pas: 269 },
-                { name: "Daddy Kermit", team: "Total Hockey Renewed Subscription", gp: 15, pp: 44, g: 40, a: 27, sv: 33, sh: 66, blk: 62, pas: 266 },
-                { name: "alfie", team: "Team Chabana", gp: 16, pp: 46, g: 36, a: 27, sv: 33, sh: 70, blk: 81, pas: 302 },
-                { name: "Liebe", team: "Pleasing Puckers", gp: 12, pp: 36, g: 47, a: 21, sv: 7, sh: 86, blk: 40, pas: 329 },
-                { name: "Mayn", team: "The Mayniacs", gp: 15, pp: 44, g: 24, a: 22, sv: 58, sh: 61, blk: 113, pas: 256 },
-                { name: "Haelnorr", team: "Bring Back Pubs", gp: 15, pp: 44, g: 32, a: 19, sv: 30, sh: 69, blk: 114, pas: 259 },
-                { name: "Dandy", team: "Total Hockey Renewed Subscription", gp: 15, pp: 40, g: 28, a: 28, sv: 30, sh: 59, blk: 88, pas: 284 },
-                { name: "Kyle", team: "Dixen Spiders", gp: 13, pp: 39, g: 30, a: 18, sv: 40, sh: 70, blk: 77, pas: 215 },
-                { name: "Turgulu", team: "Team Turgulu", gp: 12, pp: 35, g: 35, a: 7, sv: 50, sh: 56, blk: 93, pas: 250 },
-                { name: "MassiveLegend", team: "Sausage Gang", gp: 17, pp: 48, g: 19, a: 24, sv: 49, sh: 63, blk: 83, pas: 288 },
-                { name: "hqckk", team: "Dixen Spiders", gp: 12, pp: 36, g: 32, a: 14, sv: 26, sh: 74, blk: 49, pas: 242 },
-                { name: "Munby", team: "Samuel Berry", gp: 11, pp: 31, g: 25, a: 17, sv: 38, sh: 48, blk: 112, pas: 204 },
-                { name: "zenonix", team: "The Mayniacs", gp: 15, pp: 44, g: 15, a: 24, sv: 59, sh: 36, blk: 120, pas: 243 },
-                { name: "Chebs", team: "Free Agent", gp: 16, pp: 46, g: 16, a: 11, sv: 70, sh: 33, blk: 121, pas: 203 },
-                { name: "jhili", team: "Dixen Spiders", gp: 11, pp: 33, g: 12, a: 29, sv: 37, sh: 38, blk: 121, pas: 202 },
-                { name: "Kaiden", team: "Joey Fan Club", gp: 14, pp: 42, g: 21, a: 25, sv: 25, sh: 61, blk: 49, pas: 371 },
-                { name: "Forge", team: "Pleasing Puckers", gp: 11, pp: 32, g: 19, a: 29, sv: 17, sh: 47, blk: 55, pas: 228 },
-                { name: "Shrek", team: "Sausage Gang", gp: 16, pp: 40, g: 22, a: 21, sv: 14, sh: 46, blk: 90, pas: 225 },
-                { name: "Gecko", team: "Samuel Berry", gp: 9, pp: 27, g: 23, a: 18, sv: 15, sh: 54, blk: 50, pas: 216 },
-                { name: "Nefarious Ape", team: "The Mayniacs", gp: 13, pp: 38, g: 29, a: 8, sv: 7, sh: 58, blk: 56, pas: 230 },
-                { name: "Nananana", team: "Team Turgulu", gp: 12, pp: 33, g: 12, a: 18, sv: 33, sh: 24, blk: 86, pas: 175 },
-                { name: "Badza", team: "Team Chabana", gp: 11, pp: 31, g: 13, a: 15, sv: 20, sh: 33, blk: 70, pas: 228 },
-                { name: "Bogg", team: "Samuel Berry", gp: 10, pp: 29, g: 14, a: 15, sv: 9, sh: 24, blk: 30, pas: 153 },
-                { name: "coop", team: "Bring Back Pubs", gp: 9, pp: 27, g: 15, a: 7, sv: 7, sh: 28, blk: 33, pas: 151 },
-                { name: "Sinko", team: "Team Turgulu", gp: 10, pp: 28, g: 7, a: 13, sv: 11, sh: 23, blk: 50, pas: 150 },
-                { name: "PMA Advisor", team: "Sausage Gang", gp: 7, pp: 14, g: 8, a: 10, sv: 9, sh: 17, blk: 28, pas: 86 },
-                { name: "Lumids", team: "Team Chabana", gp: 4, pp: 9, g: 3, a: 6, sv: 3, sh: 14, blk: 16, pas: 53 },
-                { name: "slowbadkiller", team: "Team Turgulu", gp: 4, pp: 9, g: 4, a: 2, sv: 7, sh: 8, blk: 25, pas: 18 },
-                { name: "SkdragoN", team: "Samuel Berry", gp: 5, pp: 11, g: 1, a: 4, sv: 10, sh: 7, blk: 15, pas: 32 },
-                { name: "GGUDJ", team: "Total Hockey Renewed Subscription", gp: 3, pp: 4, g: 2, a: 5, sv: 2, sh: 5, blk: 11, pas: 20 },
-                { name: "Oak", team: "Joey Fan Club", gp: 1, pp: 3, g: 2, a: 3, sv: 1, sh: 5, blk: 6, pas: 18 },
-                { name: "MagpieRL", team: "Bring Back Pubs", gp: 2, pp: 5, g: 1, a: 1, sv: 2, sh: 1, blk: 6, pas: 16 },
-                { name: "Pogeys", team: "Pleasing Puckers", gp: 1, pp: 2, g: 0, a: 0, sv: 1, sh: 1, blk: 4, pas: 13 },
-                { name: "hope", team: "The Mayniacs", gp: 1, pp: 3, g: 0, a: 0, sv: 0, sh: 0, blk: 2, pas: 11 }
-            ]
-        };
 
         // 4-stat weights: SHO 30%, AST 20%, PAS 20%, DEF 30%
         const WEIGHTS = { SHO: 0.30, AST: 0.20, PAS: 0.20, DEF: 0.30 };

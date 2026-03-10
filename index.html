@@ -983,6 +983,201 @@
             text-decoration: none;
         }
 
+        /* === INFO BUTTON === */
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-heading h2 {
+            margin-bottom: 0;
+        }
+
+        .info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid var(--brand-cyan);
+            background: transparent;
+            color: var(--brand-cyan);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-style: italic;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .info-btn:hover {
+            background: var(--brand-cyan);
+            color: var(--navy-deep);
+            transform: scale(1.1);
+        }
+
+        /* === INFO POPUP OVERLAY === */
+        .info-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .info-overlay.active {
+            display: flex;
+        }
+
+        .info-popup {
+            background: var(--navy);
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            border-radius: 14px;
+            padding: 1.8rem 2rem;
+            max-width: 460px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: popupIn 0.2s ease;
+        }
+
+        @keyframes popupIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .info-popup-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0.2rem;
+            transition: color 0.15s;
+        }
+
+        .info-popup-close:hover {
+            color: var(--text-primary);
+        }
+
+        .info-popup h4 {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-cyan);
+            margin-bottom: 0.3rem;
+        }
+
+        .info-popup .info-subtitle {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+        }
+
+        .info-section {
+            margin-bottom: 1.1rem;
+        }
+
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-section-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--brand-gold);
+            margin-bottom: 0.45rem;
+        }
+
+        .info-stat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-stat-table tr {
+            border-bottom: 1px solid rgba(79, 195, 247, 0.06);
+        }
+
+        .info-stat-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .info-stat-table td {
+            padding: 0.38rem 0.4rem;
+            font-size: 0.875rem;
+            line-height: 1.35;
+            vertical-align: top;
+        }
+
+        .info-stat-table .stat-tag {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            padding-right: 0.7rem;
+            width: 1%;
+        }
+
+        .info-stat-table .stat-name {
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            padding-right: 0.7rem;
+            width: 1%;
+        }
+
+        .info-stat-table .stat-desc {
+            color: var(--text-primary);
+            opacity: 0.85;
+        }
+
+        .info-note {
+            background: rgba(79, 195, 247, 0.05);
+            border-left: 2px solid rgba(79, 195, 247, 0.35);
+            border-radius: 0 6px 6px 0;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .info-note strong {
+            color: var(--text-primary);
+        }
+
+        .info-divider {
+            height: 1px;
+            background: rgba(79, 195, 247, 0.08);
+            margin: 1rem 0;
+        }
+
         /* Notification toast */
         .toast {
             position: fixed;
@@ -1006,6 +1201,40 @@
         .toast.visible {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+        }
+
+        /* === CARD TILT + SHINE === */
+        #cardScene {
+            position: relative;
+            display: inline-block;
+            perspective: 900px;
+            cursor: default;
+        }
+
+        #cardScene .card-clip-wrapper {
+            transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+            will-change: transform;
+        }
+
+        /* Shine overlay — sits on top of the card, clipped to same shield shape */
+        #cardScene::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 2px;
+            pointer-events: none;
+            opacity: 0;
+            background: radial-gradient(circle at var(--shine-x, 50%) var(--shine-y, 30%),
+                    rgba(255, 255, 255, 0.22) 0%,
+                    rgba(255, 255, 255, 0.06) 35%,
+                    transparent 65%);
+            clip-path: url(#cardShield);
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        #cardScene:hover::after {
+            opacity: 1;
         }
     </style>
 </head>
@@ -1032,7 +1261,10 @@
         <div class="main-grid">
             <!-- Left: Controls -->
             <div class="panel">
-                <h2>Build Your Card</h2>
+                <div class="panel-heading">
+                    <h2>Build Your Card</h2>
+                    <button class="info-btn" id="infoBtn" title="How stats are calculated">i</button>
+                </div>
 
                 <!-- Player Name -->
                 <div class="form-group">
@@ -1095,46 +1327,48 @@
 
             <!-- Right: Card Preview -->
             <div class="card-panel">
-                <div class="card-clip-wrapper" id="cardWrapper">
-                    <div class="player-card rarity-gold" id="playerCard">
-                        <div class="card-streaks"></div>
-                        <div class="card-diagonals"></div>
-                        <div class="card-dots"></div>
+                <div id="cardScene">
+                    <div class="card-clip-wrapper" id="cardWrapper">
+                        <div class="player-card rarity-gold" id="playerCard">
+                            <div class="card-streaks"></div>
+                            <div class="card-diagonals"></div>
+                            <div class="card-dots"></div>
 
-                        <!-- Rating + meta -->
-                        <div class="card-top-left" id="cardTop">
-                            <div class="card-overall" id="cardOverall">?</div>
-                            <div class="card-season">Draft S1</div>
-                            <img src="assests/logo.png" alt="OSL" class="card-logo">
-                        </div>
-
-                        <!-- Player image -->
-                        <div class="card-image-area" id="cardImageArea">
-                            <div class="card-image-placeholder"><img src="assests/default.png" alt="Default player">
+                            <!-- Rating + meta -->
+                            <div class="card-top-left" id="cardTop">
+                                <div class="card-overall" id="cardOverall">?</div>
+                                <div class="card-season">Draft S1</div>
+                                <img src="assests/logo.png" alt="OSL" class="card-logo">
                             </div>
-                        </div>
 
-                        <!-- Gold trim bar -->
-                        <div class="card-trim" id="cardDivider"></div>
+                            <!-- Player image -->
+                            <div class="card-image-area" id="cardImageArea">
+                                <div class="card-image-placeholder"><img src="assests/default.png" alt="Default player">
+                                </div>
+                            </div>
 
-                        <!-- Name + team -->
-                        <div class="card-info" id="cardInfo">
-                            <div class="card-name" id="cardName">PLAYER</div>
-                            <div class="card-team" id="cardTeam">TEAM NAME</div>
-                        </div>
+                            <!-- Gold trim bar -->
+                            <div class="card-trim" id="cardDivider"></div>
 
-                        <!-- Stats: single row -->
-                        <div class="card-stats-section" id="cardStats">
-                            <div class="card-stats-top-divider"></div>
-                            <div class="card-stats-grid">
-                                <div class="card-stat-item"><span class="card-stat-value" id="statSHO">?</span><span
-                                        class="card-stat-label">SHO</span></div>
-                                <div class="card-stat-item"><span class="card-stat-value" id="statAST">?</span><span
-                                        class="card-stat-label">AST</span></div>
-                                <div class="card-stat-item"><span class="card-stat-value" id="statPAS">?</span><span
-                                        class="card-stat-label">PAS</span></div>
-                                <div class="card-stat-item"><span class="card-stat-value" id="statDEF">?</span><span
-                                        class="card-stat-label">DEF</span></div>
+                            <!-- Name + team -->
+                            <div class="card-info" id="cardInfo">
+                                <div class="card-name" id="cardName">PLAYER</div>
+                                <div class="card-team" id="cardTeam">TEAM NAME</div>
+                            </div>
+
+                            <!-- Stats: single row -->
+                            <div class="card-stats-section" id="cardStats">
+                                <div class="card-stats-top-divider"></div>
+                                <div class="card-stats-grid">
+                                    <div class="card-stat-item"><span class="card-stat-value" id="statSHO">?</span><span
+                                            class="card-stat-label">SHO</span></div>
+                                    <div class="card-stat-item"><span class="card-stat-value" id="statAST">?</span><span
+                                            class="card-stat-label">AST</span></div>
+                                    <div class="card-stat-item"><span class="card-stat-value" id="statPAS">?</span><span
+                                            class="card-stat-label">PAS</span></div>
+                                    <div class="card-stat-item"><span class="card-stat-value" id="statDEF">?</span><span
+                                            class="card-stat-label">DEF</span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1143,12 +1377,75 @@
         </div>
 
         <footer class="footer">
+            <p>Made by Alfie</a>
+            </p>
             <p>Stats from <a href="https://oslstats.com/seasons/DS1/leagues/Draft/stats" target="_blank">OSL Stats</a>
             </p>
         </footer>
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Stats Info Popup -->
+    <div class="info-overlay" id="infoOverlay">
+        <div class="info-popup" role="dialog" aria-label="Card Stats Explained">
+            <button class="info-popup-close" id="infoClose" aria-label="Close">✕</button>
+
+            <h4>Card Stats Explained</h4>
+            <p class="info-subtitle">All stats are <strong style="color:var(--text-primary)">per-period
+                    averages</strong> — normalised so players with fewer games aren't unfairly penalised. Each stat is
+                then <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool
+                and scaled to 50–99.</p>
+
+            <div class="info-section">
+                <div class="info-section-title">What Each Stat Measures</div>
+                <table class="info-stat-table">
+                    <tr>
+                        <td class="stat-tag">SHO</td>
+                        <td class="stat-name">Shooting</td>
+                        <td class="stat-desc">Goals per period</td>
+                    </tr>
+                    <tr>
+                        <td class="stat-tag">AST</td>
+                        <td class="stat-name">Assists</td>
+                        <td class="stat-desc">Assists per period</td>
+                    </tr>
+                    <tr>
+                        <td class="stat-tag">PAS</td>
+                        <td class="stat-name">Passing</td>
+                        <td class="stat-desc">Passes per period</td>
+                    </tr>
+                    <tr>
+                        <td class="stat-tag">DEF</td>
+                        <td class="stat-name">Defence</td>
+                        <td class="stat-desc">Saves & Blocks per period (saves weighted double)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-section">
+                <div class="info-section-title">Specialist Boost</div>
+                <div class="info-note">
+                    If a player's top stat is <strong>15+ points above</strong> their other stats, they receive an
+                    overall boost. This prevents highly specialised players (e.g. a dominant defender) from being
+                    undervalued by a weighted average.
+                </div>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-section">
+                <div class="info-section-title">10-Period Minimum</div>
+                <div class="info-note">
+                    Players with <strong>fewer than 10 periods played</strong> have their rating calculated but
+                    <strong>capped at 69</strong> (Silver max) to prevent small sample sizes
+                    inflating scores.
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="stats.js"></script>
     <script>
@@ -1627,8 +1924,71 @@
         console.table(scoredPlayers.map(p => ({
             name: p.name, OVR: p.OVR, SHO: p.SHO, AST: p.AST, PAS: p.PAS, DEF: p.DEF, rarity: p.rarity, qualified: !p.unqualified
         })));
+
+        // === CARD TILT + SHINE ===
+        const cardScene = document.getElementById('cardScene');
+        const cardWrapperEl = document.getElementById('cardWrapper');
+        const MAX_TILT = 12; // degrees
+
+        cardScene.addEventListener('mousemove', (e) => {
+            const rect = cardScene.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (e.clientX - cx) / (rect.width / 2);   // -1 to 1
+            const dy = (e.clientY - cy) / (rect.height / 2);  // -1 to 1
+
+            const rotY = dx * MAX_TILT;
+            const rotX = -dy * MAX_TILT;
+
+            cardWrapperEl.style.transform =
+                `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.03)`;
+
+            // Shine follows cursor position as a percentage
+            const shineX = ((e.clientX - rect.left) / rect.width * 100).toFixed(1) + '%';
+            const shineY = ((e.clientY - rect.top) / rect.height * 100).toFixed(1) + '%';
+            cardScene.style.setProperty('--shine-x', shineX);
+            cardScene.style.setProperty('--shine-y', shineY);
+        });
+
+        cardScene.addEventListener('mouseleave', () => {
+            cardWrapperEl.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1)';
+        });
     </script>
 
 </body>
+
+<script>
+    // Info popup toggle
+    const infoBtn = document.getElementById('infoBtn');
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoClose = document.getElementById('infoClose');
+
+    if (infoBtn) {
+        infoBtn.addEventListener('click', () => {
+            infoOverlay.classList.add('active');
+        });
+    }
+
+    if (infoClose) {
+        infoClose.addEventListener('click', () => {
+            infoOverlay.classList.remove('active');
+        });
+    }
+
+    if (infoOverlay) {
+        infoOverlay.addEventListener('click', (e) => {
+            if (e.target === infoOverlay) {
+                infoOverlay.classList.remove('active');
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && infoOverlay.classList.contains('active')) {
+                infoOverlay.classList.remove('active');
+            }
+        });
+    }
+</script>
 
 </html>

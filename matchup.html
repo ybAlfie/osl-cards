@@ -271,9 +271,7 @@
         function getFormation(teamName){
             const players=scoredPlayers.filter(p=>p.team===teamName);
             const sorted=[...players].sort((a,b)=>b.OVR-a.OVR);
-            const star=sorted[0];
-            const rest=sorted.slice(1).sort((a,b)=>b.pp-a.pp);
-            return [star, rest[0]||null, rest[1]||null, ...rest.slice(2)].filter(Boolean);
+            return sorted;
         }
 
         // === CARD HTML ===

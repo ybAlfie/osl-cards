@@ -116,6 +116,42 @@
             font-weight: 500;
         }
 
+        .nav-btns {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 0.8rem;
+        }
+
+        .nav-btns a, .nav-btns button {
+            display: inline-block;
+            padding: 0.35rem 1rem;
+            border-radius: 6px;
+            font-family: 'Teko', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            background: transparent;
+            border: 1px solid rgba(79, 195, 247, 0.15);
+            color: var(--text-muted);
+        }
+
+        .nav-btns a:hover, .nav-btns button:hover {
+            background: rgba(79, 195, 247, 0.06);
+            border-color: var(--brand-cyan);
+            color: var(--text-primary);
+        }
+
+        .nav-btns .active {
+            background: rgba(79, 195, 247, 0.1);
+            border-color: var(--brand-cyan);
+            color: var(--brand-cyan);
+        }
+
         /* === MAIN LAYOUT === */
         .main-grid {
             display: grid;
@@ -1256,6 +1292,11 @@
             <img src="assests/logo.png" alt="OSL Logo" class="header-logo">
             <h1>PLAYER <span>CARDS</span></h1>
             <p>Oceanic Slapshot League — Draft Season 1</p>
+            <div class="nav-btns">
+                <a href="index.html" class="active">Card Generator</a>
+                <a href="matchup.html">Team Matchup</a>
+                <button id="navInfoBtn">Info</button>
+            </div>
         </header>
 
         <div class="main-grid">
@@ -1965,6 +2006,13 @@
 
     if (infoBtn) {
         infoBtn.addEventListener('click', () => {
+            infoOverlay.classList.add('active');
+        });
+    }
+
+    const navInfoBtn = document.getElementById('navInfoBtn');
+    if (navInfoBtn) {
+        navInfoBtn.addEventListener('click', () => {
             infoOverlay.classList.add('active');
         });
     }

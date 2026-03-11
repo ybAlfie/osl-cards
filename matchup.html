@@ -24,6 +24,30 @@
         .header-text h1 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.15em; line-height: 1; }
         .header-text h1 span { color: var(--brand-gold); }
         .header-text p { color: var(--text-muted); font-size: 0.78rem; font-weight: 500; line-height: 1; }
+        .nav-btns { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; }
+        .nav-btns a, .nav-btns button { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 5px; font-family: 'Teko', sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; cursor: pointer; transition: background 0.2s, border-color 0.2s; background: transparent; border: 1px solid rgba(79,195,247,0.15); color: var(--text-muted); }
+        .nav-btns a:hover, .nav-btns button:hover { background: rgba(79,195,247,0.06); border-color: var(--brand-cyan); color: var(--text-primary); }
+        .nav-btns .active { background: rgba(79,195,247,0.1); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+
+        /* INFO POPUP */
+        .info-overlay { display: none; position: fixed; inset: 0; z-index: 250; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1.5rem; }
+        .info-overlay.active { display: flex; }
+        .info-popup { background: var(--navy); border: 1px solid rgba(79,195,247,0.15); border-radius: 14px; padding: 1.8rem 2rem; max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: popIn 0.2s ease; }
+        .info-popup-close { position: absolute; top: 0.8rem; right: 0.8rem; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 0.2rem; }
+        .info-popup-close:hover { color: var(--text-primary); }
+        .info-popup h4 { font-family: 'Teko', sans-serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-cyan); margin-bottom: 0.3rem; }
+        .info-popup .info-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; line-height: 1.4; }
+        .info-section { margin-bottom: 1.1rem; } .info-section:last-child { margin-bottom: 0; }
+        .info-section-title { font-family: 'Teko', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-gold); margin-bottom: 0.45rem; }
+        .info-stat-table { width: 100%; border-collapse: collapse; }
+        .info-stat-table tr { border-bottom: 1px solid rgba(79,195,247,0.06); } .info-stat-table tr:last-child { border-bottom: none; }
+        .info-stat-table td { padding: 0.38rem 0.4rem; font-size: 0.875rem; line-height: 1.35; vertical-align: top; }
+        .info-stat-table .stat-tag { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: var(--text-primary); white-space: nowrap; padding-right: 0.7rem; width: 1%; }
+        .info-stat-table .stat-name { color: var(--text-muted); font-weight: 600; white-space: nowrap; padding-right: 0.7rem; width: 1%; }
+        .info-stat-table .stat-desc { color: var(--text-primary); opacity: 0.85; }
+        .info-note { background: rgba(79,195,247,0.05); border-left: 2px solid rgba(79,195,247,0.35); border-radius: 0 6px 6px 0; padding: 0.6rem 0.8rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+        .info-note strong { color: var(--text-primary); }
+        .info-divider { height: 1px; background: rgba(79,195,247,0.08); margin: 1rem 0; }
 
         /* CONTROLS */
         .controls-panel { background: var(--navy); border: 1px solid rgba(79,195,247,0.1); border-radius: 10px; padding: 0.6rem 1rem; margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem; flex-wrap: wrap; }
@@ -192,7 +216,15 @@
     <div class="container">
         <header class="header">
             <img src="assests/logo.png" alt="OSL" class="header-logo">
-            <div class="header-text"><h1>TEAM <span>MATCHUP</span></h1><p>Oceanic Slapshot League — Draft Season 1</p></div>
+            <div class="header-text">
+                <h1>TEAM <span>MATCHUP</span></h1>
+                <p>Oceanic Slapshot League — Draft Season 1</p>
+                <div class="nav-btns">
+                    <a href="index.html">Card Generator</a>
+                    <a href="matchup.html" class="active">Team Matchup</a>
+                    <button id="navInfoBtn">Info</button>
+                </div>
+            </div>
         </header>
 
         <div class="controls-panel">
@@ -447,6 +479,7 @@
         document.addEventListener('keydown',e=>{
             if(e.key==='Escape'){
                 if(cardZoom.classList.contains('active')){cardZoom.classList.remove('active');cardZoom.innerHTML='';}
+                else if(document.getElementById('infoOverlay').classList.contains('active'))document.getElementById('infoOverlay').classList.remove('active');
                 else if(editOverlay.classList.contains('active'))editOverlay.classList.remove('active');
             }
         });
@@ -461,6 +494,41 @@
             cardZoom.innerHTML=buildCardHTML(player);
             cardZoom.classList.add('active');
         }
+    </script>
+
+    <!-- Info Popup -->
+    <div class="info-overlay" id="infoOverlay">
+        <div class="info-popup">
+            <button class="info-popup-close" id="infoClose">✕</button>
+            <h4>Card Stats Explained</h4>
+            <p class="info-subtitle">All stats are <strong style="color:var(--text-primary)">per-period averages</strong> — normalised so players with fewer games aren’t unfairly penalised. Each stat is then <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool and scaled to 50–99.</p>
+            <div class="info-section">
+                <div class="info-section-title">What Each Stat Measures</div>
+                <table class="info-stat-table">
+                    <tr><td class="stat-tag">SHO</td><td class="stat-name">Shooting</td><td class="stat-desc">Goals per period</td></tr>
+                    <tr><td class="stat-tag">AST</td><td class="stat-name">Assists</td><td class="stat-desc">Assists per period</td></tr>
+                    <tr><td class="stat-tag">PAS</td><td class="stat-name">Passing</td><td class="stat-desc">Passes per period</td></tr>
+                    <tr><td class="stat-tag">DEF</td><td class="stat-name">Defence</td><td class="stat-desc">Saves &amp; Blocks per period (saves weighted double)</td></tr>
+                </table>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-section">
+                <div class="info-section-title">Specialist Boost</div>
+                <div class="info-note">If a player’s top stat is <strong>15+ points above</strong> their other stats, they receive an overall boost. This prevents highly specialised players (e.g. a dominant defender) from being undervalued by a weighted average.</div>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-section">
+                <div class="info-section-title">10-Period Minimum</div>
+                <div class="info-note">Players with <strong>fewer than 10 periods played</strong> have their rating calculated but <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Info popup
+        document.getElementById('navInfoBtn').addEventListener('click', () => { document.getElementById('infoOverlay').classList.add('active'); });
+        document.getElementById('infoClose').addEventListener('click', () => { document.getElementById('infoOverlay').classList.remove('active'); });
+        document.getElementById('infoOverlay').addEventListener('click', e => { if (e.target.id === 'infoOverlay') document.getElementById('infoOverlay').classList.remove('active'); });
     </script>
 </body>
 </html>

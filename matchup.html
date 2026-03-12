@@ -325,11 +325,25 @@
         function makeCard(player, revealGroup, noAnim){
             const w=document.createElement('div');
             w.className='card-wrap';
+            const safeName = player.name.replace(/ /g, '_');
+            const customImgSrc = `assests/customcards/${safeName}_OSL_Card.png`;
+            
             w.innerHTML=`<div class="card-scaler"><div class="card-flip-inner ${noAnim?'no-animate revealed':'unrevealed'}" data-reveal-group="${revealGroup}" data-player="${player.name}">
                 <div class="card-front">${buildCardHTML(player)}</div>
                 <div class="card-back"><div class="card-back-inner"><img src="assests/logo.png" alt="OSL" class="back-logo"><div class="back-text">OSL</div></div></div>
             </div></div>`;
-            w.addEventListener('click',()=>showZoom(player));
+            
+            const imgCheck = new Image();
+            imgCheck.onload = function() {
+                w.dataset.customSrc = customImgSrc;
+                const frontDiv = w.querySelector('.card-front');
+                if(frontDiv) {
+                    frontDiv.innerHTML = `<div class="card-clip-wrapper"><img src="${customImgSrc}" style="width:100%; height:100%; object-fit:contain;"></div>`;
+                }
+            };
+            imgCheck.src = customImgSrc;
+
+            w.addEventListener('click',()=>showZoom(player, w.dataset.customSrc));
             return w;
         }
 
@@ -490,8 +504,12 @@
         document.body.appendChild(cardZoom);
         cardZoom.addEventListener('click',()=>{cardZoom.classList.remove('active');cardZoom.innerHTML='';});
 
-        function showZoom(player){
-            cardZoom.innerHTML=buildCardHTML(player);
+        function showZoom(player, customSrc){
+            if (customSrc) {
+                cardZoom.innerHTML = `<div class="card-clip-wrapper"><img src="${customSrc}" style="width:100%; height:100%; object-fit:contain;"></div>`;
+            } else {
+                cardZoom.innerHTML = buildCardHTML(player);
+            }
             cardZoom.classList.add('active');
         }
     </script>

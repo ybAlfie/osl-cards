@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OSL Matchup — Draft Season 1</title>
+    <!-- Season dropdown styles -->
+    <style>
+        .season-selector { display: flex; align-items: center; gap: 0.4rem; }
+        .season-selector .control-label { font-family: 'Teko', sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #7a8da6; white-space: nowrap; }
+        .season-selector select { padding: 0.4rem 0.6rem; background: #0a1628; border: 1px solid rgba(79,195,247,0.15); border-radius: 6px; color: #e8edf4; font-family: 'Rajdhani', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; min-width: 170px; }
+        .season-selector select:focus { outline: none; border-color: #4fc3f7; }
+        .season-selector select option { background: #0a1628; }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
@@ -140,7 +148,7 @@
         .card-top-left { position: absolute; top: 60px; left: 32px; z-index: 4; display: flex; flex-direction: column; align-items: center; }
         .card-overall { font-family: 'Bebas Neue', sans-serif; font-size: 5rem; line-height: 0.85; letter-spacing: -0.02em; }
         .rarity-gold .card-overall { color: #3d2e00; } .rarity-silver .card-overall { color: #1a2a3a; } .rarity-bronze .card-overall { color: #2a1a0a; }
-        .card-season { font-family: 'Teko', sans-serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.1; }
+        .card-season { font-family: 'Teko', sans-serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.1; text-align: center; }
         .rarity-gold .card-season { color: rgba(61,46,0,0.6); } .rarity-silver .card-season { color: rgba(26,42,58,0.5); } .rarity-bronze .card-season { color: rgba(42,26,10,0.5); }
         .card-logo { width: 56px; height: auto; margin-top: 6px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.2)); }
         .card-image-area { position: absolute; top: 30px; left: calc(50% - 162.5px); width: 325px; height: 285px; display: flex; align-items: flex-end; justify-content: center; z-index: 3; overflow: hidden; }
@@ -229,6 +237,13 @@
         </header>
 
         <div class="controls-panel">
+            <div class="season-selector">
+                <span class="control-label">Season:</span>
+                <select id="seasonSelect">
+                    <option value="DS1" selected>Draft Season 1</option>
+                    <option value="DS1F">Draft Season 1 Finals</option>
+                </select>
+            </div>
             <div class="team-selector"><select id="team1Select"><option value="">— Home Team —</option></select></div>
             <div class="vs-badge">VS</div>
             <div class="team-selector"><select id="team2Select"><option value="">— Away Team —</option></select></div>
@@ -284,7 +299,8 @@
         </div>
     </div>
 
-    <script src="stats.js"></script>
+    <script src="DS1_Draft_Stats.js"></script>
+    <script src="DS1_Draft_Finals_Stats.js"></script>
     <script>
         // === SCORING ENGINE ===
         const WEIGHTS={SHO:0.30,AST:0.20,PAS:0.20,DEF:0.30}, MIN_PERIODS=10, SPECIALIST_THRESHOLD=15, SPECIALIST_BLEND=0.3;
@@ -297,8 +313,39 @@
         const qb=q.map(p=>p.boostedWeighted),qp=percentileRank(qb);q.forEach((p,i)=>{p.OVR=Math.round(50+qp[i]*49)});
         u.forEach(p=>{const mn=Math.min(...qb),mx=Math.max(...qb),rn=mx-mn||1;p.OVR=Math.max(50,Math.min(69,Math.round(50+((p.boostedWeighted-mn)/rn)*49)));s.forEach(st=>{p[st]=Math.min(69,p[st])});p.unqualified=true;});
         pw.forEach(p=>{p.rarity=p.OVR>=80?'gold':p.OVR>=65?'silver':'bronze'});return pw;}
-        const scoredPlayers=computeScores(computePerPeriod(STATS_DATA.players));
-        const allTeams=[...new Set(scoredPlayers.map(p=>p.team))].filter(t=>t!=='Free Agent').sort();
+
+        // Score finals players: same formula but no period-minimum cap
+        function computeScoresNoCap(pw) {
+            const s=['SHO','AST','PAS','DEF'];
+            s.forEach(st=>{const v=pw.map(p=>p.raw[st]),pc=percentileRank(v);pw.forEach((p,i)=>{p[st]=Math.round(50+pc[i]*49)});});
+            pw.forEach(p=>{p.baseWeighted=p.SHO*0.3+p.AST*0.2+p.PAS*0.2+p.DEF*0.3});
+            pw.forEach(p=>{const sv=[p.SHO,p.AST,p.PAS,p.DEF],t=Math.max(...sv),a=(sv.reduce((a,b)=>a+b,0)-t)/3,g=t-a;p.boostedWeighted=g>=15?p.baseWeighted+(t-p.baseWeighted)*Math.min((g-15)/20,1)*0.3:p.baseWeighted;});
+            const bw=pw.map(p=>p.boostedWeighted),bp=percentileRank(bw);
+            pw.forEach((p,i)=>{p.OVR=Math.round(50+bp[i]*49)});
+            pw.forEach(p=>{p.rarity=p.OVR>=80?'gold':p.OVR>=65?'silver':'bronze'});
+            return pw;
+        }
+
+        // === SEASON DATA ===
+        const SEASON_CONFIGS = {
+            DS1:  { data: STATS_DATA,         label: 'Draft S1',       seasonHTML: 'Draft S1',                   useCustomCards: true },
+            DS1F: { data: STATS_DATA_FINALS,  label: 'DS1 Finals',     seasonHTML: 'Draft S1<br>Finals',          useCustomCards: false }
+        };
+
+        let currentSeason = 'DS1';
+        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA.players.map(p=>({...p}))));
+        let allTeams = [...new Set(scoredPlayers.map(p=>p.team))].filter(t=>t!=='Free Agent'&&t!=='\u2014').sort();
+
+        function loadSeason(seasonKey) {
+            currentSeason = seasonKey;
+            const cfg = SEASON_CONFIGS[seasonKey];
+            if (seasonKey === 'DS1F') {
+                scoredPlayers = computeScoresNoCap(computePerPeriod(cfg.data.players.map(p=>({...p}))));
+            } else {
+                scoredPlayers = computeScores(computePerPeriod(cfg.data.players.map(p=>({...p}))));
+            }
+            allTeams = [...new Set(scoredPlayers.map(p=>p.team))].filter(t=>t!=='Free Agent'&&t!=='\u2014').sort();
+        }
 
         // === FORMATION ===
         function getFormation(teamName){
@@ -309,9 +356,10 @@
 
         // === CARD HTML ===
         function buildCardHTML(p){
+            const cfg = SEASON_CONFIGS[currentSeason];
             return `<div class="card-clip-wrapper"><div class="player-card rarity-${p.rarity}">
                 <div class="card-streaks"></div><div class="card-diagonals"></div><div class="card-dots"></div>
-                <div class="card-top-left"><div class="card-overall">${p.OVR}</div><div class="card-season">Draft S1</div><img src="assests/logo.png" alt="OSL" class="card-logo"></div>
+                <div class="card-top-left"><div class="card-overall">${p.OVR}</div><div class="card-season">${cfg.seasonHTML}</div><img src="assests/logo.png" alt="OSL" class="card-logo"></div>
                 <div class="card-image-area"><div class="card-image-placeholder"><img src="assests/default.png" alt="Default"></div></div>
                 <div class="card-trim"></div>
                 <div class="card-info"><div class="card-name">${p.name.toUpperCase()}</div><div class="card-team">${p.team.toUpperCase()}</div></div>
@@ -326,23 +374,27 @@
         function makeCard(player, revealGroup, noAnim){
             const w=document.createElement('div');
             w.className='card-wrap';
-            const safeName = player.name.replace(/ /g, '_');
-            const customImgSrc = `assests/customcards/${safeName}_OSL_Card.png`;
+            const cfg = SEASON_CONFIGS[currentSeason];
             
             w.innerHTML=`<div class="card-scaler"><div class="card-flip-inner ${noAnim?'no-animate revealed':'unrevealed'}" data-reveal-group="${revealGroup}" data-player="${player.name}">
                 <div class="card-front">${buildCardHTML(player)}</div>
                 <div class="card-back"><div class="card-back-inner"><img src="assests/logo.png" alt="OSL" class="back-logo"><div class="back-text">OSL</div></div></div>
             </div></div>`;
             
-            const imgCheck = new Image();
-            imgCheck.onload = function() {
-                w.dataset.customSrc = customImgSrc;
-                const frontDiv = w.querySelector('.card-front');
-                if(frontDiv) {
-                    frontDiv.innerHTML = `<div class="card-clip-wrapper"><img src="${customImgSrc}" style="width:100%; height:100%; object-fit:contain;"></div>`;
-                }
-            };
-            imgCheck.src = customImgSrc;
+            // Only check for custom cards in DS1
+            if (cfg.useCustomCards) {
+                const safeName = player.name.replace(/ /g, '_');
+                const customImgSrc = `assests/customcards/${safeName}_OSL_Card.png`;
+                const imgCheck = new Image();
+                imgCheck.onload = function() {
+                    w.dataset.customSrc = customImgSrc;
+                    const frontDiv = w.querySelector('.card-front');
+                    if(frontDiv) {
+                        frontDiv.innerHTML = `<div class="card-clip-wrapper"><img src="${customImgSrc}" style="width:100%; height:100%; object-fit:contain;"></div>`;
+                    }
+                };
+                imgCheck.src = customImgSrc;
+            }
 
             w.addEventListener('click',()=>showZoom(player, w.dataset.customSrc));
             return w;
@@ -362,11 +414,31 @@
         const rinkWrapper=document.getElementById('rinkWrapper'), rink=document.getElementById('rink');
         const benchLeft=document.getElementById('benchLeft'), benchRight=document.getElementById('benchRight');
         const editOverlay=document.getElementById('editOverlay');
+        const seasonSelect=document.getElementById('seasonSelect');
 
-        allTeams.forEach(t=>{team1Select.add(new Option(t,t));team2Select.add(new Option(t,t));});
+        function populateTeamSelects() {
+            team1Select.innerHTML = '<option value="">— Home Team —</option>';
+            team2Select.innerHTML = '<option value="">— Away Team —</option>';
+            allTeams.forEach(t=>{team1Select.add(new Option(t,t));team2Select.add(new Option(t,t));});
+        }
+        populateTeamSelects();
+
         function checkReady(){revealBtn.disabled=!(team1Select.value&&team2Select.value&&team1Select.value!==team2Select.value);}
         team1Select.addEventListener('change',checkReady);
         team2Select.addEventListener('change',checkReady);
+
+        // Season change: reload data and reset
+        seasonSelect.addEventListener('change', () => {
+            loadSeason(seasonSelect.value);
+            populateTeamSelects();
+            // Reset any active matchup
+            rinkWrapper.classList.remove('active');
+            rink.querySelectorAll('.rink-slot').forEach(el=>el.remove());
+            benchLeft.innerHTML=''; benchRight.innerHTML='';
+            team1Select.disabled=false; team2Select.disabled=false;
+            resetBtn.style.display='none'; editBtn.style.display='none';
+            revealed=false; checkReady();
+        });
 
         function labelSize(name){
             const len=name.length;
@@ -428,7 +500,7 @@
             awayLineup=getFormation(team2Select.value);
             renderLineups(false);
             rinkWrapper.classList.add('active');
-            revealBtn.disabled=true; team1Select.disabled=true; team2Select.disabled=true;
+            revealBtn.disabled=true; team1Select.disabled=true; team2Select.disabled=true; seasonSelect.disabled=true;
             resetBtn.style.display='inline-flex';
             rinkWrapper.scrollIntoView({behavior:'smooth',block:'start'});
             setTimeout(()=>revealCards(),500);
@@ -438,7 +510,7 @@
             rinkWrapper.classList.remove('active');
             rink.querySelectorAll('.rink-slot').forEach(el=>el.remove());
             benchLeft.innerHTML=''; benchRight.innerHTML='';
-            team1Select.disabled=false; team2Select.disabled=false;
+            team1Select.disabled=false; team2Select.disabled=false; seasonSelect.disabled=false;
             resetBtn.style.display='none'; editBtn.style.display='none';
             revealed=false; checkReady();
         });
@@ -537,8 +609,13 @@
             </div>
             <div class="info-divider"></div>
             <div class="info-section">
-                <div class="info-section-title">10-Period Minimum</div>
-                <div class="info-note">Players with <strong>fewer than 10 periods played</strong> have their rating calculated but <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+                <div class="info-section-title">10-Period Minimum (Draft S1)</div>
+                <div class="info-note">In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-section">
+                <div class="info-section-title">Finals Scoring</div>
+                <div class="info-note">Finals cards use the same scoring formula but with <strong>no period minimum cap</strong>. Since finalists already qualified through the regular season, all players receive a full uncapped rating based on their finals performance.</div>
             </div>
         </div>
     </div>

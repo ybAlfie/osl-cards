@@ -1,0 +1,28 @@
+const STATS_DATA_FINALS = {
+    season: "Draft S1 Finals",
+    players: [
+        { name: "silly13sausage", team: "Sausage Gang", gp: 12, pp: 36, g: 29, a: 15, sv: 14, sh: 59, blk: 119, pas: 206 },
+        { name: "Benny", team: "Joey Fan Club", gp: 10, pp: 30, g: 24, a: 23, sv: 16, sh: 63, blk: 73, pas: 257 },
+        { name: "zuza", team: "Joey Fan Club", gp: 10, pp: 30, g: 19, a: 21, sv: 10, sh: 51, blk: 57, pas: 265 },
+        { name: "MassiveLegend", team: "Sausage Gang", gp: 12, pp: 36, g: 7, a: 16, sv: 72, sh: 22, blk: 72, pas: 165 },
+        { name: "Chabana", team: "Dothraki Dogs", gp: 9, pp: 27, g: 20, a: 16, sv: 9, sh: 50, blk: 44, pas: 241 },
+        { name: "Kaiden", team: "Joey Fan Club", gp: 10, pp: 30, g: 15, a: 16, sv: 35, sh: 32, blk: 50, pas: 236 },
+        { name: "Liebe", team: "Pleasing Puckers", gp: 9, pp: 27, g: 23, a: 11, sv: 3, sh: 44, blk: 48, pas: 233 },
+        { name: "Badza", team: "Dothraki Dogs", gp: 9, pp: 27, g: 7, a: 14, sv: 32, sh: 21, blk: 86, pas: 166 },
+        { name: "alfie", team: "Dothraki Dogs", gp: 9, pp: 27, g: 17, a: 12, sv: 4, sh: 33, blk: 23, pas: 182 },
+        { name: "jhili", team: "Dixen Spiders", gp: 6, pp: 18, g: 5, a: 11, sv: 25, sh: 19, blk: 52, pas: 131 },
+        { name: "hqckk", team: "Dixen Spiders", gp: 6, pp: 18, g: 14, a: 7, sv: 9, sh: 34, blk: 20, pas: 154 },
+        { name: "Kyle", team: "Dixen Spiders", gp: 6, pp: 18, g: 11, a: 7, sv: 15, sh: 26, blk: 23, pas: 118 },
+        { name: "Moses", team: "Pleasing Puckers", gp: 9, pp: 27, g: 7, a: 11, sv: 10, sh: 20, blk: 70, pas: 198 },
+        { name: "PMA Advisor", team: "Sausage Gang", gp: 8, pp: 19, g: 8, a: 7, sv: 8, sh: 23, blk: 41, pas: 119 },
+        { name: "Forge", team: "Pleasing Puckers", gp: 9, pp: 25, g: 7, a: 6, sv: 12, sh: 22, blk: 34, pas: 158 },
+        { name: "Dwarf", team: "Total Hockey Renewed Subscription", gp: 3, pp: 9, g: 7, a: 5, sv: 21, sh: 13, blk: 33, pas: 39 },
+        { name: "Mayn", team: "The Mayniacs", gp: 3, pp: 9, g: 4, a: 6, sv: 12, sh: 10, blk: 31, pas: 49 },
+        { name: "zenonix", team: "The Mayniacs", gp: 3, pp: 9, g: 6, a: 3, sv: 9, sh: 14, blk: 23, pas: 66 },
+        { name: "Nefarious Ape", team: "The Mayniacs", gp: 3, pp: 9, g: 6, a: 3, sv: 5, sh: 15, blk: 15, pas: 54 },
+        { name: "Chebs", team: "\u2014", gp: 4, pp: 11, g: 5, a: 2, sv: 14, sh: 6, blk: 16, pas: 33 },
+        { name: "Dandy", team: "Total Hockey Renewed Subscription", gp: 3, pp: 9, g: 4, a: 3, sv: 2, sh: 10, blk: 16, pas: 45 },
+        { name: "Shrek", team: "Sausage Gang", gp: 5, pp: 8, g: 5, a: 1, sv: 2, sh: 9, blk: 16, pas: 53 },
+        { name: "Daddy Kermit", team: "Total Hockey Renewed Subscription", gp: 3, pp: 9, g: 4, a: 0, sv: 10, sh: 5, blk: 12, pas: 39 },
+    ]
+};

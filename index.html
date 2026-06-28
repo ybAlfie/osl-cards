@@ -1490,27 +1490,15 @@
                 </div>
             </div>
 
-            <!-- Season 2: shrinkage + sample-size confidence -->
+            <!-- Season 2: sample-size confidence -->
             <div class="info-season" data-season="DS2">
-                <div class="info-divider"></div>
-
-                <div class="info-section">
-                    <div class="info-section-title">Shrinkage (Season 2)</div>
-                    <div class="info-note">
-                        Each per-period rate is pulled toward the league average based on periods played — a few
-                        periods leans on the league average, while a full season keeps a player's real rate.
-                        This stops small samples from spiking.
-                    </div>
-                </div>
-
                 <div class="info-divider"></div>
 
                 <div class="info-section">
                     <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
                     <div class="info-note">
-                        Every stat <strong>and</strong> the overall are then scaled toward the baseline by how many
-                        periods a player has logged, reaching full credit at <strong>10+ periods</strong>. Players with
-                        very few periods can't outrank established players, and a card's stats always line up with its overall.
+                        A player's stats are scaled toward the baseline until they've played enough, reaching full
+                        credit at <strong>10+ periods</strong>. This prevents small sample sizes inflating scores.
                     </div>
                 </div>
             </div>
@@ -1688,39 +1676,44 @@
 
         /**
          * Season 2 scoring (used only for DS2 — legacy seasons keep computeScores/NoCap).
-         * Fixes small-sample distortion two ways:
-         *  1. Shrinkage — each per-period rate is blended toward the league rate
-         *     ((statTotal + K·leagueRate)/(PP + K)), so noisy short samples regress
-         *     toward average instead of spiking. DEF keeps the saves×2+blocks weighting.
-         *  2. Confidence — every stat AND the overall are pulled toward 50 by
-         *     min(PP/CONF_PP, 1), so players with few periods can't outrank
-         *     established players (full credit once they've played CONF_PP periods).
-         * No qualified/unqualified split and no hard cap — everyone is one pool.
-         * Takes raw player objects (g/a/pas/sv/blk/pp); does its own rate maths.
+         * Handles small samples with a single idea: SAMPLE-SIZE CONFIDENCE.
+         * Each stat is a per-period rate, percentile-ranked to 50-99. A player's stats
+         * are then scaled toward the 50 baseline by min(PP / CONF_PP, 1) — so someone
+         * with few periods hasn't "earned" the full spread until they've played CONF_PP
+         * periods. The overall is the percentile rank of the weighted, *confidence-
+         * adjusted* stats, so the overall always follows the stats shown on the card
+         * (no "higher stats but lower overall" contradictions). One pool, no hard cap.
+         *
+         * Note: an earlier version also blended rates toward the league average
+         * ("shrinkage"). It was dropped here because it quietly nudged 10+ period
+         * players too and was hard to explain; it's a candidate for the planned
+         * interactive "tweak the formula" page rather than the default scoring.
+         * Takes raw player objects (g/a/pas/sv/blk/pp).
          */
-        const S2_SHRINK_K = 10;  // periods of league-average prior blended into each rate
-        const S2_CONF_PP  = 10;  // periods needed for full confidence
+        const S2_CONF_PP = 10;  // periods needed before a player's stats count at full value
         function computeScoresS2(players) {
             const S = ['SHO','AST','PAS','DEF'];
-            const totals = { SHO:0, AST:0, PAS:0, DEF:0, PP:0 };
-            players.forEach(p => { totals.SHO+=p.g; totals.AST+=p.a; totals.PAS+=p.pas; totals.DEF+=(p.sv*2+p.blk); totals.PP+=p.pp; });
-            const leagueRate = {};
-            S.forEach(s => leagueRate[s] = totals[s] / (totals.PP || 1));
 
-            // 1. Shrink each rate toward the league rate
+            // 1. Per-period rates (DEF = saves*2 + blocks, matching the other seasons)
             players.forEach(p => {
-                const rawTot = { SHO:p.g, AST:p.a, PAS:p.pas, DEF:(p.sv*2+p.blk) };
-                p.adj = {};
-                S.forEach(s => { p.adj[s] = (rawTot[s] + S2_SHRINK_K * leagueRate[s]) / (p.pp + S2_SHRINK_K); });
+                const pp = p.pp || 1;
+                p.rate = { SHO: p.g/pp, AST: p.a/pp, PAS: p.pas/pp, DEF: (p.sv*2 + p.blk)/pp };
             });
 
             // 2. Percentile-rank each stat across everyone -> 50-99
             S.forEach(s => {
-                const pc = percentileRank(players.map(p => p.adj[s]));
+                const pc = percentileRank(players.map(p => p.rate[s]));
                 players.forEach((p, i) => { p[s] = Math.round(50 + pc[i] * 49); });
             });
 
-            // 3. Weighted base + specialist boost
+            // 3. Sample-size confidence: scale each stat toward 50 for thin samples
+            //    (full credit at CONF_PP periods). This is the only small-sample control.
+            players.forEach(p => {
+                const conf = Math.min(p.pp / S2_CONF_PP, 1);
+                S.forEach(s => { p[s] = Math.round(50 + (p[s] - 50) * conf); });
+            });
+
+            // 4. Weighted base + specialist boost, from the confidence-adjusted stats
             players.forEach(p => { p.baseWeighted = p.SHO*WEIGHTS.SHO + p.AST*WEIGHTS.AST + p.PAS*WEIGHTS.PAS + p.DEF*WEIGHTS.DEF; });
             players.forEach(p => {
                 const sv = [p.SHO,p.AST,p.PAS,p.DEF], t = Math.max(...sv), ao = (sv.reduce((a,b)=>a+b,0)-t)/3, gap = t-ao;
@@ -1729,15 +1722,10 @@
                     : p.baseWeighted;
             });
 
-            // 4. Percentile-rank overall across everyone -> 50-99
+            // 5. Overall = percentile rank of the weighted scores -> 50-99 (follows the visible stats)
             const op = percentileRank(players.map(p => p.boostedWeighted));
-            players.forEach((p, i) => { p.OVR = Math.round(50 + op[i] * 49); });
-
-            // 5. Sample-size confidence: pull stats AND overall toward 50 for thin samples
-            players.forEach(p => {
-                const conf = Math.min(p.pp / S2_CONF_PP, 1);
-                S.forEach(s => { p[s] = Math.round(50 + (p[s] - 50) * conf); });
-                p.OVR = Math.round(50 + (p.OVR - 50) * conf);
+            players.forEach((p, i) => {
+                p.OVR = Math.round(50 + op[i] * 49);
                 p.rarity = p.OVR >= 80 ? 'gold' : p.OVR >= 65 ? 'silver' : 'bronze';
             });
 

@@ -240,13 +240,8 @@
             <div class="info-season" data-season="DS2">
                 <div class="info-divider"></div>
                 <div class="info-section">
-                    <div class="info-section-title">Shrinkage (Season 2)</div>
-                    <div class="info-note">Each per-period rate is pulled toward the league average based on periods played — a few periods leans on the league average, a full season keeps a player's real rate. This stops small samples from spiking.</div>
-                </div>
-                <div class="info-divider"></div>
-                <div class="info-section">
                     <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
-                    <div class="info-note">Every stat <strong>and</strong> the overall are then scaled toward the baseline by periods played, reaching full credit at <strong>10+ periods</strong>. Players with very few periods can't outrank established players, and a card's stats always line up with its overall.</div>
+                    <div class="info-note">A player's stats are scaled toward the baseline until they've played enough, reaching full credit at <strong>10+ periods</strong>. This prevents small sample sizes inflating scores.</div>
                 </div>
             </div>
             <div class="info-season" data-season="DS1">
@@ -294,20 +289,19 @@
             return pw;
         }
 
-        // Season 2 scoring: shrinkage toward league rate + sample-size confidence (legacy seasons unchanged).
-        // Takes raw players; no qualified/unqualified split, no hard cap. See index.html for full notes.
-        const S2_SHRINK_K=10, S2_CONF_PP=10;
+        // Season 2 scoring: sample-size confidence only (legacy seasons unchanged). See index.html for full notes.
+        // Per-period stats percentile-ranked 50-99, scaled toward 50 by min(PP/CONF_PP,1); overall is the
+        // percentile rank of the confidence-adjusted weighted stats, so overall always follows the visible stats.
+        // (Earlier "shrinkage" toward the league rate was dropped — saved for the interactive page.)
+        const S2_CONF_PP=10;
         function computeScoresS2(players){
             const S=['SHO','AST','PAS','DEF'];
-            const tot={SHO:0,AST:0,PAS:0,DEF:0,PP:0};
-            players.forEach(p=>{tot.SHO+=p.g;tot.AST+=p.a;tot.PAS+=p.pas;tot.DEF+=(p.sv*2+p.blk);tot.PP+=p.pp;});
-            const lr={};S.forEach(s=>lr[s]=tot[s]/(tot.PP||1));
-            players.forEach(p=>{const r={SHO:p.g,AST:p.a,PAS:p.pas,DEF:(p.sv*2+p.blk)};p.adj={};S.forEach(s=>{p.adj[s]=(r[s]+S2_SHRINK_K*lr[s])/(p.pp+S2_SHRINK_K);});});
-            S.forEach(s=>{const pc=percentileRank(players.map(p=>p.adj[s]));players.forEach((p,i)=>{p[s]=Math.round(50+pc[i]*49);});});
+            players.forEach(p=>{const pp=p.pp||1;p.rate={SHO:p.g/pp,AST:p.a/pp,PAS:p.pas/pp,DEF:(p.sv*2+p.blk)/pp};});
+            S.forEach(s=>{const pc=percentileRank(players.map(p=>p.rate[s]));players.forEach((p,i)=>{p[s]=Math.round(50+pc[i]*49);});});
+            players.forEach(p=>{const c=Math.min(p.pp/S2_CONF_PP,1);S.forEach(s=>{p[s]=Math.round(50+(p[s]-50)*c);});});
             players.forEach(p=>{p.baseWeighted=p.SHO*WEIGHTS.SHO+p.AST*WEIGHTS.AST+p.PAS*WEIGHTS.PAS+p.DEF*WEIGHTS.DEF;});
             players.forEach(p=>{const sv=[p.SHO,p.AST,p.PAS,p.DEF],t=Math.max(...sv),ao=(sv.reduce((a,b)=>a+b,0)-t)/3,g=t-ao;p.boostedWeighted=g>=SPECIALIST_THRESHOLD?p.baseWeighted+(t-p.baseWeighted)*Math.min((g-SPECIALIST_THRESHOLD)/20,1)*SPECIALIST_BLEND:p.baseWeighted;});
-            const op=percentileRank(players.map(p=>p.boostedWeighted));players.forEach((p,i)=>{p.OVR=Math.round(50+op[i]*49);});
-            players.forEach(p=>{const c=Math.min(p.pp/S2_CONF_PP,1);S.forEach(s=>{p[s]=Math.round(50+(p[s]-50)*c);});p.OVR=Math.round(50+(p.OVR-50)*c);p.rarity=p.OVR>=80?'gold':p.OVR>=65?'silver':'bronze';});
+            const op=percentileRank(players.map(p=>p.boostedWeighted));players.forEach((p,i)=>{p.OVR=Math.round(50+op[i]*49);p.rarity=p.OVR>=80?'gold':p.OVR>=65?'silver':'bronze';});
             return players;
         }
 

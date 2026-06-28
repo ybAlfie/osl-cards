@@ -1919,7 +1919,8 @@
             document.getElementById('statPAS').textContent = p.PAS;
             document.getElementById('statDEF').textContent = p.DEF;
 
-            // Player image
+            // Player image (manual upload) or default placeholder.
+            // The generator never auto-fills a stored character — users upload their own.
             if (playerImageUrl) {
                 cardImageArea.innerHTML = `<img src="${playerImageUrl}" alt="${p.name}" style="transform-origin:center bottom">`;
                 applyImageTransform();

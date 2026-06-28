@@ -1651,6 +1651,64 @@
             return pw;
         }
 
+        /**
+         * Season 2 scoring (used only for DS2 — legacy seasons keep computeScores/NoCap).
+         * Fixes small-sample distortion two ways:
+         *  1. Shrinkage — each per-period rate is blended toward the league rate
+         *     ((statTotal + K·leagueRate)/(PP + K)), so noisy short samples regress
+         *     toward average instead of spiking. DEF keeps the saves×2+blocks weighting.
+         *  2. Confidence — every stat AND the overall are pulled toward 50 by
+         *     min(PP/CONF_PP, 1), so players with few periods can't outrank
+         *     established players (full credit once they've played CONF_PP periods).
+         * No qualified/unqualified split and no hard cap — everyone is one pool.
+         * Takes raw player objects (g/a/pas/sv/blk/pp); does its own rate maths.
+         */
+        const S2_SHRINK_K = 10;  // periods of league-average prior blended into each rate
+        const S2_CONF_PP  = 10;  // periods needed for full confidence
+        function computeScoresS2(players) {
+            const S = ['SHO','AST','PAS','DEF'];
+            const totals = { SHO:0, AST:0, PAS:0, DEF:0, PP:0 };
+            players.forEach(p => { totals.SHO+=p.g; totals.AST+=p.a; totals.PAS+=p.pas; totals.DEF+=(p.sv*2+p.blk); totals.PP+=p.pp; });
+            const leagueRate = {};
+            S.forEach(s => leagueRate[s] = totals[s] / (totals.PP || 1));
+
+            // 1. Shrink each rate toward the league rate
+            players.forEach(p => {
+                const rawTot = { SHO:p.g, AST:p.a, PAS:p.pas, DEF:(p.sv*2+p.blk) };
+                p.adj = {};
+                S.forEach(s => { p.adj[s] = (rawTot[s] + S2_SHRINK_K * leagueRate[s]) / (p.pp + S2_SHRINK_K); });
+            });
+
+            // 2. Percentile-rank each stat across everyone -> 50-99
+            S.forEach(s => {
+                const pc = percentileRank(players.map(p => p.adj[s]));
+                players.forEach((p, i) => { p[s] = Math.round(50 + pc[i] * 49); });
+            });
+
+            // 3. Weighted base + specialist boost
+            players.forEach(p => { p.baseWeighted = p.SHO*WEIGHTS.SHO + p.AST*WEIGHTS.AST + p.PAS*WEIGHTS.PAS + p.DEF*WEIGHTS.DEF; });
+            players.forEach(p => {
+                const sv = [p.SHO,p.AST,p.PAS,p.DEF], t = Math.max(...sv), ao = (sv.reduce((a,b)=>a+b,0)-t)/3, gap = t-ao;
+                p.boostedWeighted = gap >= SPECIALIST_THRESHOLD
+                    ? p.baseWeighted + (t - p.baseWeighted) * Math.min((gap - SPECIALIST_THRESHOLD)/20, 1) * SPECIALIST_BLEND
+                    : p.baseWeighted;
+            });
+
+            // 4. Percentile-rank overall across everyone -> 50-99
+            const op = percentileRank(players.map(p => p.boostedWeighted));
+            players.forEach((p, i) => { p.OVR = Math.round(50 + op[i] * 49); });
+
+            // 5. Sample-size confidence: pull stats AND overall toward 50 for thin samples
+            players.forEach(p => {
+                const conf = Math.min(p.pp / S2_CONF_PP, 1);
+                S.forEach(s => { p[s] = Math.round(50 + (p[s] - 50) * conf); });
+                p.OVR = Math.round(50 + (p.OVR - 50) * conf);
+                p.rarity = p.OVR >= 80 ? 'gold' : p.OVR >= 65 ? 'silver' : 'bronze';
+            });
+
+            return players;
+        }
+
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
             DS2:  { data: STATS_DATA_S2,      seasonHTML: 'Draft S2',          useCustomCards: false },
@@ -1661,7 +1719,7 @@
         let currentSeason = 'DS2';
 
         // Compute all scores on load
-        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA_S2.players.map(p=>({...p}))));
+        let scoredPlayers = computeScoresS2(STATS_DATA_S2.players.map(p=>({...p})));
 
         // Build lookup by name (case-insensitive)
         let playerLookup = {};
@@ -1672,7 +1730,9 @@
         function loadSeason(seasonKey) {
             currentSeason = seasonKey;
             const cfg = SEASON_CONFIGS[seasonKey];
-            if (seasonKey === 'DS1F') {
+            if (seasonKey === 'DS2') {
+                scoredPlayers = computeScoresS2(cfg.data.players.map(p=>({...p})));
+            } else if (seasonKey === 'DS1F') {
                 scoredPlayers = computeScoresNoCap(computePerPeriod(cfg.data.players.map(p=>({...p}))));
             } else {
                 scoredPlayers = computeScores(computePerPeriod(cfg.data.players.map(p=>({...p}))));

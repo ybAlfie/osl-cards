@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSL Matchup — Draft Season 1</title>
+    <title>OSL Matchup — Draft</title>
     <!-- Season dropdown styles -->
     <style>
         .season-selector { display: flex; align-items: center; gap: 0.4rem; }
@@ -226,7 +226,7 @@
             <img src="assests/logo.png" alt="OSL" class="header-logo">
             <div class="header-text">
                 <h1>TEAM <span>MATCHUP</span></h1>
-                <p>Oceanic Slapshot League — Draft Season 1</p>
+                <p>Oceanic Slapshot League — Draft</p>
                 <div class="nav-btns">
                     <a href="index.html">Card Generator</a>
                     <a href="matchup.html" class="active">Team Matchup</a>
@@ -240,7 +240,8 @@
             <div class="season-selector">
                 <span class="control-label">Season:</span>
                 <select id="seasonSelect">
-                    <option value="DS1" selected>Draft Season 1</option>
+                    <option value="DS2" selected>Draft Season 2</option>
+                    <option value="DS1">Draft Season 1</option>
                     <option value="DS1F">Draft Season 1 Finals</option>
                 </select>
             </div>
@@ -301,6 +302,7 @@
 
     <script src="DS1_Draft_Stats.js"></script>
     <script src="DS1_Draft_Finals_Stats.js"></script>
+    <script src="DS2_Draft_Stats.js"></script>
     <script>
         // === SCORING ENGINE ===
         const WEIGHTS={SHO:0.30,AST:0.20,PAS:0.20,DEF:0.30}, MIN_PERIODS=10, SPECIALIST_THRESHOLD=15, SPECIALIST_BLEND=0.3;
@@ -328,12 +330,13 @@
 
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
-            DS1:  { data: STATS_DATA,         label: 'Draft S1',       seasonHTML: 'Draft S1',                   useCustomCards: true },
+            DS2:  { data: STATS_DATA_S2,      label: 'Draft S2',       seasonHTML: 'Draft S2',                    useCustomCards: false },
+            DS1:  { data: STATS_DATA,         label: 'Draft S1',       seasonHTML: 'Draft S1',                   useCustomCards: true,  customDir: 'customcards_season1' },
             DS1F: { data: STATS_DATA_FINALS,  label: 'DS1 Finals',     seasonHTML: 'Draft S1<br>Finals',          useCustomCards: false }
         };
 
-        let currentSeason = 'DS1';
-        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA.players.map(p=>({...p}))));
+        let currentSeason = 'DS2';
+        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA_S2.players.map(p=>({...p}))));
         let allTeams = [...new Set(scoredPlayers.map(p=>p.team))].filter(t=>t!=='Free Agent'&&t!=='\u2014').sort();
 
         function loadSeason(seasonKey) {
@@ -384,7 +387,7 @@
             // Only check for custom cards in DS1
             if (cfg.useCustomCards) {
                 const safeName = player.name.replace(/ /g, '_');
-                const customImgSrc = `assests/customcards/${safeName}_OSL_Card.png`;
+                const customImgSrc = `assests/${cfg.customDir}/${safeName}_OSL_Card.png`;
                 const imgCheck = new Image();
                 imgCheck.onload = function() {
                     w.dataset.customSrc = customImgSrc;
@@ -609,8 +612,8 @@
             </div>
             <div class="info-divider"></div>
             <div class="info-section">
-                <div class="info-section-title">10-Period Minimum (Draft S1)</div>
-                <div class="info-note">In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+                <div class="info-section-title">10-Period Minimum (Regular Season)</div>
+                <div class="info-note">In the regular Draft season, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
             </div>
             <div class="info-divider"></div>
             <div class="info-section">

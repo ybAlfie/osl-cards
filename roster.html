@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSL All Players — Draft Season 1</title>
+    <title>OSL All Players — Draft</title>
     <meta name="description" content="Full roster of all OSL players ranked by overall rating and individual stats.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -190,7 +190,8 @@
             <div class="control-group">
                 <span class="control-label">Season:</span>
                 <select id="seasonSelect">
-                    <option value="DS1" selected>Draft Season 1</option>
+                    <option value="DS2" selected>Draft Season 2</option>
+                    <option value="DS1">Draft Season 1</option>
                     <option value="DS1F">Draft Season 1 Finals</option>
                 </select>
             </div>
@@ -234,8 +235,8 @@
             </div>
             <div class="info-divider"></div>
             <div class="info-section">
-                <div class="info-section-title">10-Period Minimum (Draft S1)</div>
-                <div class="info-note">In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+                <div class="info-section-title">10-Period Minimum (Regular Season)</div>
+                <div class="info-note">In the regular Draft season, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
             </div>
             <div class="info-divider"></div>
             <div class="info-section">
@@ -247,6 +248,7 @@
 
     <script src="DS1_Draft_Stats.js"></script>
     <script src="DS1_Draft_Finals_Stats.js"></script>
+    <script src="DS2_Draft_Stats.js"></script>
     <script>
         // === SCORING ENGINE (same as matchup.html) ===
         const WEIGHTS={SHO:0.30,AST:0.20,PAS:0.20,DEF:0.30}, MIN_PERIODS=10, SPECIALIST_THRESHOLD=15, SPECIALIST_BLEND=0.3;
@@ -274,12 +276,13 @@
 
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
-            DS1:  { data: STATS_DATA,         label: 'Draft S1',   seasonHTML: 'Draft S1',          useCustomCards: true },
+            DS2:  { data: STATS_DATA_S2,      label: 'Draft S2',   seasonHTML: 'Draft S2',          useCustomCards: false },
+            DS1:  { data: STATS_DATA,         label: 'Draft S1',   seasonHTML: 'Draft S1',          useCustomCards: true,  customDir: 'customcards_season1' },
             DS1F: { data: STATS_DATA_FINALS,  label: 'DS1 Finals', seasonHTML: 'Draft S1<br>Finals', useCustomCards: false }
         };
 
-        let currentSeason = 'DS1';
-        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA.players.map(p=>({...p}))));
+        let currentSeason = 'DS2';
+        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA_S2.players.map(p=>({...p}))));
 
         function loadSeason(seasonKey) {
             currentSeason = seasonKey;
@@ -328,7 +331,7 @@
             // Only check for custom card in DS1
             if (cfg.useCustomCards) {
                 const safeName = player.name.replace(/ /g, '_');
-                const customImgSrc = `assests/customcards/${safeName}_OSL_Card.png`;
+                const customImgSrc = `assests/${cfg.customDir}/${safeName}_OSL_Card.png`;
                 const imgCheck = new Image();
                 imgCheck.onload = function() {
                     w.dataset.customSrc = customImgSrc;

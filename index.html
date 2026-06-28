@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSL Player Cards — Draft Season 1</title>
+    <title>OSL Player Cards — Draft</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap"
@@ -1292,7 +1292,7 @@
         <header class="header">
             <img src="assests/logo.png" alt="OSL Logo" class="header-logo">
             <h1>PLAYER <span>CARDS</span></h1>
-            <p>Oceanic Slapshot League — Draft Season 1</p>
+            <p>Oceanic Slapshot League — Draft</p>
             <div class="nav-btns">
                 <a href="index.html" class="active">Card Generator</a>
                 <a href="matchup.html">Team Matchup</a>
@@ -1312,7 +1312,8 @@
                 <div class="form-group">
                     <label>Season</label>
                     <select id="seasonSelect" style="width:100%;padding:0.7rem 1rem;background:var(--navy-deep);border:1px solid rgba(79,195,247,0.15);border-radius:8px;color:var(--text-primary);font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:500;cursor:pointer;">
-                        <option value="DS1" selected>Draft Season 1</option>
+                        <option value="DS2" selected>Draft Season 2</option>
+                        <option value="DS1">Draft Season 1</option>
                         <option value="DS1F">Draft Season 1 Finals</option>
                     </select>
                 </div>
@@ -1388,7 +1389,7 @@
                             <!-- Rating + meta -->
                             <div class="card-top-left" id="cardTop">
                                 <div class="card-overall" id="cardOverall">?</div>
-                                <div class="card-season" id="cardSeasonLabel">Draft S1</div>
+                                <div class="card-season" id="cardSeasonLabel">Draft S2</div>
                                 <img src="assests/logo.png" alt="OSL" class="card-logo">
                             </div>
 
@@ -1488,9 +1489,9 @@
             <div class="info-divider"></div>
 
             <div class="info-section">
-                <div class="info-section-title">10-Period Minimum (Draft S1)</div>
+                <div class="info-section-title">10-Period Minimum (Regular Season)</div>
                 <div class="info-note">
-                    In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating
+                    In the regular Draft season, players with <strong>fewer than 10 periods played</strong> have their rating
                     <strong>capped at 69</strong> (Silver max) to prevent small sample sizes
                     inflating scores.
                 </div>
@@ -1511,6 +1512,7 @@
 
     <script src="DS1_Draft_Stats.js"></script>
     <script src="DS1_Draft_Finals_Stats.js"></script>
+    <script src="DS2_Draft_Stats.js"></script>
     <script>
         // ========================================
         // DATA & SCORING ENGINE
@@ -1651,14 +1653,15 @@
 
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
-            DS1:  { data: STATS_DATA,         seasonHTML: 'Draft S1',          useCustomCards: true },
+            DS2:  { data: STATS_DATA_S2,      seasonHTML: 'Draft S2',          useCustomCards: false },
+            DS1:  { data: STATS_DATA,         seasonHTML: 'Draft S1',          useCustomCards: true,  customDir: 'customcards_season1' },
             DS1F: { data: STATS_DATA_FINALS,  seasonHTML: 'Draft S1<br>Finals', useCustomCards: false }
         };
 
-        let currentSeason = 'DS1';
+        let currentSeason = 'DS2';
 
         // Compute all scores on load
-        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA.players.map(p=>({...p}))));
+        let scoredPlayers = computeScores(computePerPeriod(STATS_DATA_S2.players.map(p=>({...p}))));
 
         // Build lookup by name (case-insensitive)
         let playerLookup = {};

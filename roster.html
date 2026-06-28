@@ -39,6 +39,7 @@
         .info-popup h4 { font-family: 'Teko', sans-serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-cyan); margin-bottom: 0.3rem; }
         .info-popup .info-subtitle { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 1.2rem; line-height: 1.4; }
         .info-section { margin-bottom: 1.1rem; } .info-section:last-child { margin-bottom: 0; }
+        .info-season { display: none; } /* shown per current season via JS */
         .info-section-title { font-family: 'Teko', sans-serif; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-gold); margin-bottom: 0.45rem; }
         .info-stat-table { width: 100%; border-collapse: collapse; }
         .info-stat-table tr { border-bottom: 1px solid rgba(79,195,247,0.06); } .info-stat-table tr:last-child { border-bottom: none; }
@@ -221,7 +222,7 @@
         <div class="info-popup">
             <button class="info-popup-close" id="infoClose">✕</button>
             <h4>Card Stats Explained</h4>
-            <p class="info-subtitle">All stats are <strong style="color:var(--text-primary)">per-period averages</strong> — normalised so players with fewer games aren't unfairly penalised. Each stat is then <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool and scaled to 50–99.</p>
+            <p class="info-subtitle">All stats are based on <strong style="color:var(--text-primary)">per-period output</strong> — normalised so players with fewer games aren't unfairly penalised — then <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool and scaled to 50–99. Sample-size handling differs by season (below).</p>
             <div class="info-section">
                 <div class="info-section-title">What Each Stat Measures</div>
                 <table class="info-stat-table">
@@ -236,15 +237,31 @@
                 <div class="info-section-title">Specialist Boost</div>
                 <div class="info-note">If a player's top stat is <strong>15+ points above</strong> their other stats, they receive an overall boost. This prevents highly specialised players (e.g. a dominant defender) from being undervalued by a weighted average.</div>
             </div>
-            <div class="info-divider"></div>
-            <div class="info-section">
-                <div class="info-section-title">10-Period Minimum (Regular Season)</div>
-                <div class="info-note">In the regular Draft season, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+            <div class="info-season" data-season="DS2">
+                <div class="info-divider"></div>
+                <div class="info-section">
+                    <div class="info-section-title">Shrinkage (Season 2)</div>
+                    <div class="info-note">Each per-period rate is pulled toward the league average based on periods played — a few periods leans on the league average, a full season keeps a player's real rate. This stops small samples from spiking.</div>
+                </div>
+                <div class="info-divider"></div>
+                <div class="info-section">
+                    <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
+                    <div class="info-note">Every stat <strong>and</strong> the overall are then scaled toward the baseline by periods played, reaching full credit at <strong>10+ periods</strong>. Players with very few periods can't outrank established players, and a card's stats always line up with its overall.</div>
+                </div>
             </div>
-            <div class="info-divider"></div>
-            <div class="info-section">
-                <div class="info-section-title">Finals Scoring</div>
-                <div class="info-note">Finals cards use the same scoring formula but with <strong>no period minimum cap</strong>. Since finalists already qualified through the regular season, all players receive a full uncapped rating based on their finals performance.</div>
+            <div class="info-season" data-season="DS1">
+                <div class="info-divider"></div>
+                <div class="info-section">
+                    <div class="info-section-title">10-Period Minimum (Season 1)</div>
+                    <div class="info-note">In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating <strong>capped at 69</strong> (Silver max) to prevent small sample sizes inflating scores.</div>
+                </div>
+            </div>
+            <div class="info-season" data-season="DS1F">
+                <div class="info-divider"></div>
+                <div class="info-section">
+                    <div class="info-section-title">Finals Scoring (Season 1)</div>
+                    <div class="info-note">Finals cards use the Season 1 formula but with <strong>no period minimum cap</strong>. Since finalists already qualified through the regular season, all players receive a full uncapped rating based on their finals performance.</div>
+                </div>
             </div>
         </div>
     </div>
@@ -440,10 +457,19 @@
             }
         });
 
+        // Show the scoring explainer that matches the current season
+        function updateInfoSeason(season) {
+            document.querySelectorAll('#infoOverlay .info-season').forEach(el => {
+                el.style.display = (el.dataset.season === season) ? 'block' : 'none';
+            });
+        }
+        updateInfoSeason(currentSeason);
+
         // Season change — reload data and re-render
         const seasonSelect = document.getElementById('seasonSelect');
         seasonSelect.addEventListener('change', () => {
             loadSeason(seasonSelect.value);
+            updateInfoSeason(seasonSelect.value);
             if (hasRevealed) {
                 renderRoster(false);
             }

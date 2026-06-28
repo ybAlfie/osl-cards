@@ -1143,6 +1143,10 @@
             margin-bottom: 0;
         }
 
+        .info-season {
+            display: none; /* shown per current season via JS */
+        }
+
         .info-section-title {
             font-family: 'Teko', sans-serif;
             font-size: 0.9rem;
@@ -1444,10 +1448,10 @@
             <button class="info-popup-close" id="infoClose" aria-label="Close">✕</button>
 
             <h4>Card Stats Explained</h4>
-            <p class="info-subtitle">All stats are <strong style="color:var(--text-primary)">per-period
-                    averages</strong> — normalised so players with fewer games aren't unfairly penalised. Each stat is
-                then <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool
-                and scaled to 50–99.</p>
+            <p class="info-subtitle">All stats are based on <strong style="color:var(--text-primary)">per-period
+                    output</strong> — normalised so players with fewer games aren't unfairly penalised — then
+                <strong style="color:var(--text-primary)">percentile-ranked</strong> against the full player pool
+                and scaled to 50–99. Sample-size handling differs by season (below).</p>
 
             <div class="info-section">
                 <div class="info-section-title">What Each Stat Measures</div>
@@ -1486,25 +1490,56 @@
                 </div>
             </div>
 
-            <div class="info-divider"></div>
+            <!-- Season 2: shrinkage + sample-size confidence -->
+            <div class="info-season" data-season="DS2">
+                <div class="info-divider"></div>
 
-            <div class="info-section">
-                <div class="info-section-title">10-Period Minimum (Regular Season)</div>
-                <div class="info-note">
-                    In the regular Draft season, players with <strong>fewer than 10 periods played</strong> have their rating
-                    <strong>capped at 69</strong> (Silver max) to prevent small sample sizes
-                    inflating scores.
+                <div class="info-section">
+                    <div class="info-section-title">Shrinkage (Season 2)</div>
+                    <div class="info-note">
+                        Each per-period rate is pulled toward the league average based on periods played — a few
+                        periods leans on the league average, while a full season keeps a player's real rate.
+                        This stops small samples from spiking.
+                    </div>
+                </div>
+
+                <div class="info-divider"></div>
+
+                <div class="info-section">
+                    <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
+                    <div class="info-note">
+                        Every stat <strong>and</strong> the overall are then scaled toward the baseline by how many
+                        periods a player has logged, reaching full credit at <strong>10+ periods</strong>. Players with
+                        very few periods can't outrank established players, and a card's stats always line up with its overall.
+                    </div>
                 </div>
             </div>
 
-            <div class="info-divider"></div>
+            <!-- Season 1: legacy 10-period cap -->
+            <div class="info-season" data-season="DS1">
+                <div class="info-divider"></div>
 
-            <div class="info-section">
-                <div class="info-section-title">Finals Scoring</div>
-                <div class="info-note">
-                    Finals cards use the same scoring formula but with <strong>no period minimum cap</strong>.
-                    Since finalists already qualified through the regular season, all players receive
-                    a full uncapped rating based on their finals performance.
+                <div class="info-section">
+                    <div class="info-section-title">10-Period Minimum (Season 1)</div>
+                    <div class="info-note">
+                        In Draft Season 1, players with <strong>fewer than 10 periods played</strong> have their rating
+                        <strong>capped at 69</strong> (Silver max) to prevent small sample sizes
+                        inflating scores.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Season 1 Finals: legacy, no cap -->
+            <div class="info-season" data-season="DS1F">
+                <div class="info-divider"></div>
+
+                <div class="info-section">
+                    <div class="info-section-title">Finals Scoring (Season 1)</div>
+                    <div class="info-note">
+                        Finals cards use the Season 1 formula but with <strong>no period minimum cap</strong>.
+                        Since finalists already qualified through the regular season, all players receive
+                        a full uncapped rating based on their finals performance.
+                    </div>
                 </div>
             </div>
         </div>
@@ -1903,9 +1938,18 @@
             downloadBtn.disabled = false;
         }
 
+        // Show the scoring explainer that matches the current season
+        function updateInfoSeason(season) {
+            document.querySelectorAll('#infoOverlay .info-season').forEach(el => {
+                el.style.display = (el.dataset.season === season) ? 'block' : 'none';
+            });
+        }
+        updateInfoSeason(currentSeason);
+
         // Season change handler
         document.getElementById('seasonSelect').addEventListener('change', function() {
             loadSeason(this.value);
+            updateInfoSeason(this.value);
             // Update the season label on the card
             document.getElementById('cardSeasonLabel').innerHTML = SEASON_CONFIGS[currentSeason].seasonHTML;
             // If a player was selected, try to reselect them in the new season

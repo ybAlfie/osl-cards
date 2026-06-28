@@ -34,15 +34,15 @@ const STATS_DATA_S2 = {
         { name: "Kaidan", team: "FC Passelona", gp: 6, pp: 17, g: 12, a: 6, sv: 13, sh: 19, blk: 29, pas: 108 },
         { name: "MiqeL", team: "Post Pingers", gp: 6, pp: 16, g: 5, a: 8, sv: 10, sh: 12, blk: 32, pas: 89 },
         { name: "PMA Advisor", team: "Horse Hockey", gp: 8, pp: 13, g: 2, a: 6, sv: 17, sh: 4, blk: 34, pas: 78 },
-        { name: "Chebs", team: "—", gp: 2, pp: 6, g: 3, a: 2, sv: 16, sh: 14, blk: 6, pas: 28 },
-        { name: "Gecko", team: "—", gp: 1, pp: 3, g: 6, a: 4, sv: 0, sh: 1, blk: 8, pas: 28 },
+        { name: "Chebs", team: "Free Agent", gp: 2, pp: 6, g: 3, a: 2, sv: 16, sh: 14, blk: 6, pas: 28 },
+        { name: "Gecko", team: "Free Agent", gp: 1, pp: 3, g: 6, a: 4, sv: 0, sh: 1, blk: 8, pas: 28 },
         { name: "Erson", team: "Passing Pork Farters", gp: 6, pp: 6, g: 4, a: 3, sv: 2, sh: 7, blk: 6, pas: 47 },
         { name: "Oak", team: "FC Passelona", gp: 3, pp: 8, g: 1, a: 0, sv: 9, sh: 5, blk: 13, pas: 43 },
-        { name: "Levy", team: "—", gp: 1, pp: 3, g: 2, a: 3, sv: 9, sh: 1, blk: 5, pas: 23 },
+        { name: "Levy", team: "Free Agent", gp: 1, pp: 3, g: 2, a: 3, sv: 9, sh: 1, blk: 5, pas: 23 },
         { name: "illu", team: "Passing Pork Farters", gp: 4, pp: 4, g: 2, a: 1, sv: 0, sh: 4, blk: 2, pas: 34 },
-        { name: "coop", team: "—", gp: 1, pp: 2, g: 2, a: 0, sv: 3, sh: 3, blk: 3, pas: 9 },
+        { name: "coop", team: "Free Agent", gp: 1, pp: 2, g: 2, a: 0, sv: 3, sh: 3, blk: 3, pas: 9 },
         { name: "aytreena", team: "Define Coolin", gp: 3, pp: 6, g: 0, a: 0, sv: 1, sh: 1, blk: 16, pas: 18 },
         { name: "T3J", team: "Post Pingers", gp: 1, pp: 1, g: 0, a: 0, sv: 1, sh: 1, blk: 3, pas: 5 },
-        { name: "dwarde", team: "—", gp: 1, pp: 1, g: 0, a: 1, sv: 1, sh: 0, blk: 2, pas: 7 }
+        { name: "dwarde", team: "Free Agent", gp: 1, pp: 1, g: 0, a: 1, sv: 1, sh: 0, blk: 2, pas: 7 }
     ]
 };

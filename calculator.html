@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSL Rating Calculator — Draft S2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap"
+        rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy-deep: #0a1628;
+            --navy: #142238;
+            --navy-mid: #1c3054;
+            --brand-blue: #1b6b9e;
+            --brand-cyan: #4fc3f7;
+            --brand-gold: #f5b731;
+            --text-primary: #e8edf4;
+            --text-muted: #7a8da6;
+            --gold-3: #f5d442;
+            --silver-4: #c8dae8;
+            --bronze-4: #e0974a;
+            --up: #46d17f;
+            --down: #f0635f;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--navy-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(27, 107, 158, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(245, 183, 49, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* === HEADER === */
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: 0.15em;
+            line-height: 1;
+        }
+        .header h1 span { color: var(--brand-gold); }
+        .header p { color: var(--text-muted); font-size: 1.05rem; margin-top: 0.3rem; font-weight: 500; }
+        .nav-btns { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.8rem; flex-wrap: wrap; }
+        .nav-btns a, .nav-btns button { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 5px; font-family: 'Teko', sans-serif; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; cursor: pointer; transition: background 0.2s, border-color 0.2s; background: transparent; border: 1px solid rgba(79,195,247,0.15); color: var(--text-muted); }
+        .nav-btns a:hover, .nav-btns button:hover { background: rgba(79,195,247,0.06); border-color: var(--brand-cyan); color: var(--text-primary); }
+        .nav-btns .active { background: rgba(79,195,247,0.1); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+        .wip-badge {
+            display: inline-block;
+            margin-top: 0.7rem;
+            padding: 0.25rem 0.8rem;
+            border: 1px solid rgba(245, 183, 49, 0.4);
+            border-radius: 20px;
+            color: var(--brand-gold);
+            font-family: 'Teko', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* === LAYOUT === */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--navy);
+            border: 1px solid rgba(79, 195, 247, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .ctrl-section { padding: 1.1rem 0; border-bottom: 1px solid rgba(79, 195, 247, 0.08); }
+        .ctrl-section:first-child { padding-top: 0; }
+        .ctrl-section:last-child { border-bottom: none; padding-bottom: 0; }
+        .ctrl-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-cyan);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* method segmented control */
+        .seg { display: flex; gap: 0.4rem; }
+        .seg button {
+            flex: 1;
+            padding: 0.55rem 0.5rem;
+            background: var(--navy-deep);
+            border: 1px solid rgba(79, 195, 247, 0.15);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: 'Teko', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .seg button:hover { border-color: var(--brand-cyan); color: var(--text-primary); }
+        .seg button.active { background: rgba(79, 195, 247, 0.12); border-color: var(--brand-cyan); color: var(--brand-cyan); }
+        .method-note { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.6rem; line-height: 1.4; }
+
+        /* toggle rows */
+        .toggle-row { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.6rem; }
+        .toggle-row.disabled { opacity: 0.4; pointer-events: none; }
+        .toggle-row label.tog-label { font-weight: 600; font-size: 0.95rem; flex: 1; cursor: pointer; }
+        input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--brand-cyan); cursor: pointer; }
+        .param {
+            display: flex; align-items: center; gap: 0.4rem;
+            margin: 0 0 0.9rem 1.7rem; font-size: 0.85rem; color: var(--text-muted);
+        }
+        .param input[type="number"] {
+            width: 58px; padding: 0.3rem 0.45rem;
+            background: var(--navy-deep);
+            border: 1px solid rgba(79, 195, 247, 0.15);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; font-weight: 600;
+        }
+        .param input:focus { outline: none; border-color: var(--brand-cyan); }
+
+        /* weights */
+        .weight-row { display: grid; grid-template-columns: 48px 1fr 46px; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }
+        .weight-row .wlabel { font-family: 'Teko', sans-serif; font-weight: 600; letter-spacing: 0.05em; color: var(--text-muted); font-size: 1rem; }
+        .weight-row input[type="range"] { width: 100%; accent-color: var(--brand-gold); cursor: pointer; }
+        .weight-row .wpct { text-align: right; font-weight: 700; font-size: 0.9rem; color: var(--brand-gold); }
+
+        /* stat formula editor */
+        .fsub { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.04em; }
+        .formula-stat { border: 1px solid rgba(79, 195, 247, 0.1); border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden; }
+        .formula-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.6rem; cursor: pointer; background: var(--navy-deep); }
+        .formula-head:hover { background: var(--navy-mid); }
+        .formula-head .fname { font-family: 'Teko', sans-serif; font-weight: 600; letter-spacing: 0.05em; color: var(--brand-cyan); width: 38px; flex: none; }
+        .formula-head .fsummary { flex: 1; font-family: 'Consolas', monospace; font-size: 0.74rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .formula-head .fcaret { flex: none; color: var(--text-muted); font-size: 0.8rem; transition: transform 0.15s; }
+        .formula-stat.open .fcaret { transform: rotate(90deg); }
+        .formula-body { display: none; padding: 0.6rem; border-top: 1px solid rgba(79, 195, 247, 0.08); }
+        .formula-stat.open .formula-body { display: block; }
+        .term-row { display: grid; grid-template-columns: 1fr 14px 52px 24px; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem; }
+        .term-row select, .term-row input, .norm-row select, .adv-wrap input {
+            background: var(--navy-deep); border: 1px solid rgba(79, 195, 247, 0.15); border-radius: 5px;
+            color: var(--text-primary); font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; padding: 0.25rem 0.35rem;
+        }
+        .term-row select:focus, .term-row input:focus, .norm-row select:focus, .adv-wrap input:focus { outline: none; border-color: var(--brand-cyan); }
+        .term-row .t-x { text-align: center; color: var(--text-muted); }
+        .term-row .t-del { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 0; }
+        .term-row .t-del:hover { color: var(--down); }
+        .add-term { background: none; border: 1px dashed rgba(79, 195, 247, 0.25); border-radius: 5px; color: var(--brand-cyan); font-family: 'Teko', sans-serif; font-size: 0.85rem; padding: 0.25rem 0.6rem; cursor: pointer; margin-bottom: 0.5rem; }
+        .add-term:hover { background: rgba(79, 195, 247, 0.06); }
+        .norm-row { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+        .adv-row { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; cursor: pointer; }
+        .formula-stat.adv .struct { display: none; }
+        .adv-wrap { display: none; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .formula-stat.adv .adv-wrap { display: flex; }
+        .adv-wrap input { flex: 1; font-family: 'Consolas', monospace; }
+        .t-status { font-size: 0.85rem; font-weight: 700; flex: none; }
+        .t-status.ok { color: var(--up); }
+        .t-status.err { color: var(--down); font-size: 0.7rem; font-weight: 500; }
+        #formulaSection.disabled { opacity: 0.4; pointer-events: none; }
+
+        .btn-reset {
+            width: 100%; margin-top: 0.4rem; padding: 0.6rem;
+            background: transparent;
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: 'Teko', sans-serif; font-size: 1rem; font-weight: 600;
+            letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+        }
+        .btn-reset:hover { border-color: var(--brand-cyan); color: var(--text-primary); }
+
+        /* info tooltip */
+        .info-i {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 1px solid var(--text-muted); color: var(--text-muted);
+            font-family: 'Teko', sans-serif; font-size: 0.75rem; font-weight: 700; line-height: 1;
+            text-transform: none; letter-spacing: 0;
+            cursor: help; position: relative; flex: none;
+        }
+        .info-i:hover, .info-i:focus { border-color: var(--brand-cyan); color: var(--brand-cyan); outline: none; }
+        .info-i .tip {
+            display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            width: 264px; padding: 0.7rem 0.85rem;
+            background: #050c18; border: 1px solid rgba(79, 195, 247, 0.3); border-radius: 8px;
+            color: var(--text-primary); font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 500;
+            line-height: 1.45; text-align: left; letter-spacing: 0; text-transform: none; white-space: normal;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5); z-index: 50; pointer-events: none;
+        }
+        .info-i:hover .tip, .info-i:focus .tip { display: block; }
+        .info-i .tip::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border: 6px solid transparent; border-top-color: rgba(79, 195, 247, 0.3);
+        }
+        /* right-anchored variant (for icons near the right edge so the box stays on-panel) */
+        .info-i.tip-right .tip { left: auto; right: -6px; transform: none; }
+        .info-i.tip-right .tip::after { left: auto; right: 8px; transform: none; }
+        .info-i .tip .fml {
+            display: block; margin-top: 0.5rem; padding: 0.35rem 0.5rem;
+            background: rgba(79, 195, 247, 0.08); border-left: 2px solid var(--brand-cyan); border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 0.72rem; color: #bfe6fb;
+            white-space: normal; line-height: 1.5;
+        }
+
+        /* delta column metric picker */
+        .col-delta { white-space: nowrap; }
+        .delta-select {
+            background: var(--navy-deep); color: var(--brand-cyan);
+            border: 1px solid rgba(79, 195, 247, 0.25); border-radius: 5px;
+            font-family: 'Teko', sans-serif; font-size: 0.9rem; font-weight: 600;
+            letter-spacing: 0.04em; padding: 0.12rem 0.25rem; cursor: pointer; vertical-align: middle;
+        }
+        .delta-select:focus { outline: none; border-color: var(--brand-cyan); }
+
+        /* === TABLE === */
+        .table-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.5rem; }
+        .table-head h2 { font-family: 'Teko', sans-serif; font-size: 1.5rem; font-weight: 600; letter-spacing: 0.06em; color: var(--brand-cyan); text-transform: uppercase; }
+        .table-head .hint { font-size: 0.82rem; color: var(--text-muted); }
+
+        .rtable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+        .rtable th, .rtable td { padding: 0.5rem 0.55rem; text-align: center; }
+        .rtable thead th {
+            font-family: 'Teko', sans-serif; font-size: 0.95rem; font-weight: 600;
+            letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted);
+            border-bottom: 2px solid rgba(79, 195, 247, 0.15); cursor: pointer; user-select: none; white-space: nowrap;
+        }
+        .rtable thead th:hover { color: var(--brand-cyan); }
+        .rtable thead th.sorted { color: var(--brand-cyan); }
+        .rtable thead th .arr { font-size: 0.7rem; }
+        .rtable th.col-player, .rtable td.col-player { text-align: left; }
+        .rtable th.col-rank, .rtable td.col-rank { text-align: right; color: var(--text-muted); width: 32px; }
+        .rtable tbody tr { border-bottom: 1px solid rgba(79, 195, 247, 0.05); }
+        .rtable tbody tr:hover { background: rgba(79, 195, 247, 0.04); }
+        .rtable td.col-player { font-weight: 700; font-size: 1rem; }
+        .rtable td .team { display: block; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.03em; text-transform: uppercase; margin-top: -2px; }
+        .rtable td.stat { font-weight: 600; color: var(--text-primary); }
+        .rtable td.ovr { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; }
+        .tier-gold { color: var(--gold-3); }
+        .tier-silver { color: var(--silver-4); }
+        .tier-bronze { color: var(--bronze-4); }
+
+        .delta { font-weight: 700; font-size: 0.9rem; white-space: nowrap; }
+        .delta.up { color: var(--up); }
+        .delta.down { color: var(--down); }
+        .delta.same { color: var(--text-muted); }
+
+        .legend { margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 1.2rem; flex-wrap: wrap; }
+        .legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 0.35rem; vertical-align: middle; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>RATING <span>CALCULATOR</span></h1>
+            <p>Experiment with how Draft Season 2 ratings are calculated</p>
+            <div class="nav-btns">
+                <a href="index.html">Card Generator</a>
+                <a href="matchup.html">Team Matchup</a>
+                <a href="roster.html">All Players</a>
+                <a href="calculator.html" class="active">Rating Calculator</a>
+            </div>
+            <div class="wip-badge">⚙ Under construction</div>
+        </header>
+
+        <div class="calc-grid">
+            <!-- ===== CONTROLS ===== -->
+            <div class="panel">
+                <div class="ctrl-section">
+                    <div class="ctrl-title">Rating Method</div>
+                    <div class="seg" id="methodSeg">
+                        <button data-method="S1">Season 1</button>
+                        <button data-method="S2" class="active">Season 2</button>
+                    </div>
+                    <div class="method-note" id="methodNote"></div>
+                </div>
+
+                <div class="ctrl-section" id="sampleSection">
+                    <div class="ctrl-title">Sample-Size Handling</div>
+
+                    <div class="toggle-row" id="confRow">
+                        <input type="checkbox" id="confOn" checked>
+                        <label class="tog-label" for="confOn">Confidence</label>
+                        <span class="info-i" tabindex="0">i<span class="tip">Players with few periods haven't proven themselves. Each player's stats are scaled toward the 50 baseline in proportion to periods played, reaching full value at the number below. Higher = stricter on small samples.<span class="fml">shown = 50 + (rank − 50) × min(PP ÷ N, 1)</span></span></span>
+                    </div>
+                    <div class="param" id="confParam">
+                        Full credit at <input type="number" id="confPP" min="1" max="60" value="10"> periods
+                    </div>
+
+                    <div class="toggle-row" id="shrinkRow">
+                        <input type="checkbox" id="shrinkOn">
+                        <label class="tog-label" for="shrinkOn">Bayesian shrinkage</label>
+                        <span class="info-i" tabindex="0">i<span class="tip">Blends each per-period rate toward the league average. K is how many "league-average periods" are mixed in — a player must play well beyond K periods for their own rate to dominate. Higher K = stronger pull toward average.<span class="fml">rate = (statTotal + K × leagueAvg) ÷ (PP + K)</span></span></span>
+                    </div>
+                    <div class="param" id="shrinkParam">
+                        Strength K = <input type="number" id="shrinkK" min="0" max="50" value="10">
+                    </div>
+                </div>
+
+                <div class="ctrl-section" id="formulaSection">
+                    <div class="ctrl-title">Stat Formulas</div>
+                    <div id="formulas"></div>
+                </div>
+
+                <div class="ctrl-section">
+                    <div class="ctrl-title">Overall Weighting
+                        <span class="info-i" tabindex="0">i<span class="tip">A player's <strong>overall (OVR)</strong> is a single 50–99 rating. Each of the four stats is multiplied by its weight below and added into one score; that score is then ranked against every other player and mapped to 50–99 — so the top player is 99 and the lowest is 50. The specialist boost can nudge it up for lopsided players.<span class="fml">weighted = Σ (stat × weight)<br>OVR = 50 + percentile(weighted) × 49</span></span></span>
+                    </div>
+                    <div id="weights"></div>
+                    <div class="toggle-row" style="margin-top:0.8rem;">
+                        <input type="checkbox" id="specOn" checked>
+                        <label class="tog-label" for="specOn">Specialist boost</label>
+                        <span class="info-i" tabindex="0">i<span class="tip">If a player's best stat is far above their others, the overall gets a small boost so specialists (e.g. a dominant defender) aren't undervalued by the weighted average. Threshold = points above the rest before it kicks in.<span class="fml">gap = best − avg(other 3)<br>if gap ≥ T:  ovr += (best − ovr) × min((gap−T)/20, 1) × 0.3</span></span></span>
+                    </div>
+                    <div class="param" id="specParam">
+                        Threshold <input type="number" id="specThr" min="0" max="40" value="15"> pts
+                    </div>
+                </div>
+
+                <div class="ctrl-section">
+                    <button class="btn-reset" id="resetBtn">↺ Reset to Season 2 default</button>
+                </div>
+            </div>
+
+            <!-- ===== TABLE ===== -->
+            <div class="panel">
+                <div class="table-head">
+                    <h2>Player Ratings</h2>
+                    <span class="hint">▲▼ = change vs current Season 2 method · click a column to sort</span>
+                </div>
+                <table class="rtable">
+                    <thead>
+                        <tr>
+                            <th class="col-rank">#</th>
+                            <th class="col-player" data-sort="name">Player</th>
+                            <th data-sort="SHO">SHO</th>
+                            <th data-sort="AST">AST</th>
+                            <th data-sort="PAS">PAS</th>
+                            <th data-sort="DEF">DEF</th>
+                            <th data-sort="OVR">OVR</th>
+                            <th class="col-delta" data-sort="delta">Δ
+                                <select id="deltaMetric" class="delta-select" title="Pick what change to show">
+                                    <option value="OVR">OVR</option>
+                                    <option value="pos">Position</option>
+                                    <option value="SHO">SHO</option>
+                                    <option value="AST">AST</option>
+                                    <option value="PAS">PAS</option>
+                                    <option value="DEF">DEF</option>
+                                </select>
+                                <span class="info-i tip-right" tabindex="0">i<span class="tip">How much this changed vs the current Season 2 method. Pick a stat to see its rating shift, or <strong>Position</strong> to see how many places a player moves in the overall (OVR) ranking.</span></span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+                <div class="legend">
+                    <span><span class="dot" style="background:var(--gold-3)"></span>Gold 80+</span>
+                    <span><span class="dot" style="background:var(--silver-4)"></span>Silver 65–79</span>
+                    <span><span class="dot" style="background:var(--bronze-4)"></span>Bronze 50–64</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="DS2_Draft_Stats.js"></script>
+    <script>
+        // ============================================================
+        // SCORING ENGINE
+        // ============================================================
+        const STAT_KEYS = ['SHO', 'AST', 'PAS', 'DEF'];
+
+        function percentileRank(v) {
+            const n = v.length, ix = v.map((x, i) => ({ x, i }));
+            ix.sort((a, b) => a.x - b.x);
+            const r = new Array(n); let i = 0;
+            while (i < n) { let j = i; while (j < n && ix[j].x === ix[i].x) j++; const a = (i + j - 1) / 2; for (let k = i; k < j; k++) r[ix[k].i] = a; i = j; }
+            return r.map(z => z / (n - 1));
+        }
+
+        // legacy fixed per-period definitions (used only by the Season 1 method)
+        function rate(p) { const pp = p.pp || 1; return { SHO: p.g / pp, AST: p.a / pp, PAS: p.pas / pp, DEF: (p.sv * 2 + p.blk) / pp }; }
+        function normW(w) { const s = (w.SHO + w.AST + w.PAS + w.DEF) || 1; return { SHO: w.SHO / s, AST: w.AST / s, PAS: w.PAS / s, DEF: w.DEF / s }; }
+
+        // ---- stat palette: everything from the All Stats table ----
+        const STAT_TOKENS = ['g', 'a', 'pa', 'sa', 'sv', 'sh', 'blk', 'pas', 'pts', 'sc', 'cr', 'gp', 'pp'];
+        const STAT_LABELS = { g: 'Goals', a: 'Assists', pa: 'Primary assists', sa: 'Secondary assists', sv: 'Saves', sh: 'Shots', blk: 'Blocks', pas: 'Passes', pts: 'Points', sc: 'Score', cr: 'Conversion %', gp: 'Games', pp: 'Periods' };
+
+        // equivalent expression string for a structured formula (for the summary + advanced prefill)
+        function structuredExpr(f) {
+            const parts = f.terms.filter(t => t.stat).map(t => (t.weight === 1 ? '' : t.weight + '*') + t.stat);
+            let s = parts.length === 0 ? '0' : (parts.length > 1 ? '(' + parts.join(' + ') + ')' : parts[0]);
+            if (f.divide === 'pp') s += ' / pp'; else if (f.divide === 'gp') s += ' / gp';
+            return s;
+        }
+
+        // compile a safe advanced expression: only stat tokens, numbers and + - * / ( )
+        const EXPR_OK = /^[\s0-9+\-*/().a-z_]+$/i;
+        function compileExpr(expr) {
+            if (!expr || !expr.trim()) throw new Error('empty');
+            if (!EXPR_OK.test(expr)) throw new Error('only stats, numbers, + - * / ( )');
+            for (const id of (expr.match(/[a-z_][a-z0-9_]*/gi) || [])) if (!STAT_TOKENS.includes(id)) throw new Error('unknown stat: ' + id);
+            return new Function(...STAT_TOKENS, 'return (' + expr + ');');
+        }
+
+        // raw value of one card-stat for one player, per its formula
+        function rawValue(p, f) {
+            if (f.advanced) {
+                if (!f.compiled) { try { f.compiled = compileExpr(f.expr || structuredExpr(f)); } catch (e) { return 0; } }
+                const v = f.compiled(...STAT_TOKENS.map(t => p[t] ?? 0));
+                return Number.isFinite(v) ? v : 0;
+            }
+            let num = 0; f.terms.forEach(t => { if (t.stat) num += (t.weight || 0) * (p[t.stat] ?? 0); });
+            const d = f.divide === 'pp' ? (p.pp || 1) : f.divide === 'gp' ? (p.gp || 1) : 1;
+            return d ? num / d : num;
+        }
+
+        function applySpecialist(p, cfg) {
+            if (!cfg.specialist.on) { p.boost = p.bw; return; }
+            const sv = [p.SHO, p.AST, p.PAS, p.DEF], t = Math.max(...sv), ao = (sv.reduce((a, b) => a + b, 0) - t) / 3, g = t - ao;
+            p.boost = g >= cfg.specialist.threshold ? p.bw + (t - p.bw) * Math.min((g - cfg.specialist.threshold) / 20, 1) * 0.3 : p.bw;
+        }
+
+        // Modern method: per-stat formula -> (optional shrinkage) -> percentile -> (optional confidence) -> weighted -> OVR
+        function computeModern(P, cfg, F) {
+            const W = normW(cfg.weights);
+            STAT_KEYS.forEach(s => {
+                P.forEach(p => { (p._raw = p._raw || {})[s] = rawValue(p, F[s]); });
+                if (cfg.shrinkage.on) {
+                    // generalized shrinkage: regress toward the pp-weighted league mean by sample size
+                    const sumPP = P.reduce((a, p) => a + p.pp, 0) || 1;
+                    const mean = P.reduce((a, p) => a + p._raw[s] * p.pp, 0) / sumPP;
+                    P.forEach(p => { (p._adj = p._adj || {})[s] = mean + (p._raw[s] - mean) * (p.pp / (p.pp + cfg.shrinkage.k)); });
+                } else {
+                    P.forEach(p => { (p._adj = p._adj || {})[s] = p._raw[s]; });
+                }
+                const pc = percentileRank(P.map(p => p._adj[s]));
+                P.forEach((p, i) => p[s] = Math.round(50 + pc[i] * 49));
+            });
+            if (cfg.confidence.on) P.forEach(p => { const c = Math.min(p.pp / cfg.confidence.pp, 1); STAT_KEYS.forEach(s => p[s] = Math.round(50 + (p[s] - 50) * c)); });
+            P.forEach(p => { p.bw = p.SHO * W.SHO + p.AST * W.AST + p.PAS * W.PAS + p.DEF * W.DEF; applySpecialist(p, cfg); });
+            const op = percentileRank(P.map(p => p.boost));
+            P.forEach((p, i) => { p.OVR = Math.round(50 + op[i] * 49); p.rarity = rarity(p.OVR); });
+            return P;
+        }
+
+        // Season 1 legacy: percentile per-period, weighted+specialist, OVR ranked among qualified,
+        // sub-10-period players capped at 69 (stats too). Uses fixed definitions, ignores custom formulas.
+        function computeS1(P, cfg) {
+            const MINP = 10, W = normW(cfg.weights);
+            P.forEach(p => { p._v = rate(p); });
+            STAT_KEYS.forEach(s => { const pc = percentileRank(P.map(p => p._v[s])); P.forEach((p, i) => p[s] = Math.round(50 + pc[i] * 49)); });
+            P.forEach(p => { p.bw = p.SHO * W.SHO + p.AST * W.AST + p.PAS * W.PAS + p.DEF * W.DEF; applySpecialist(p, cfg); });
+            const q = P.filter(p => p.pp >= MINP), u = P.filter(p => p.pp < MINP);
+            const qb = q.map(p => p.boost), qp = percentileRank(qb);
+            q.forEach((p, i) => { p.OVR = Math.round(50 + qp[i] * 49); });
+            const mn = Math.min(...qb), mx = Math.max(...qb), rg = (mx - mn) || 1;
+            u.forEach(p => { p.OVR = Math.max(50, Math.min(69, Math.round(50 + ((p.boost - mn) / rg) * 49))); STAT_KEYS.forEach(s => p[s] = Math.min(69, p[s])); });
+            P.forEach(p => p.rarity = rarity(p.OVR));
+            return P;
+        }
+
+        function rarity(o) { return o >= 80 ? 'gold' : o >= 65 ? 'silver' : 'bronze'; }
+
+        function compute(cfg, F) {
+            const P = STATS_DATA_S2.players.map(p => ({ ...p }));
+            return cfg.method === 'S1' ? computeS1(P, cfg) : computeModern(P, cfg, F);
+        }
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        const DEFAULT_WEIGHTS = { SHO: 30, AST: 20, PAS: 20, DEF: 30 };
+        const S2_BASELINE = { method: 'S2', confidence: { on: true, pp: 10 }, shrinkage: { on: false, k: 10 }, weights: { ...DEFAULT_WEIGHTS }, specialist: { on: true, threshold: 15 } };
+        const clone = o => JSON.parse(JSON.stringify(o));
+
+        // default stat formulas = the current Season 2 definitions
+        function defFormulas() {
+            return {
+                SHO: { terms: [{ stat: 'g', weight: 1 }], divide: 'pp', advanced: false, expr: '' },
+                AST: { terms: [{ stat: 'a', weight: 1 }], divide: 'pp', advanced: false, expr: '' },
+                PAS: { terms: [{ stat: 'pas', weight: 1 }], divide: 'pp', advanced: false, expr: '' },
+                DEF: { terms: [{ stat: 'sv', weight: 2 }, { stat: 'blk', weight: 1 }], divide: 'pp', advanced: false, expr: '' }
+            };
+        }
+        const DEFAULT_FORMULAS = defFormulas();   // frozen reference for the S2 baseline
+        let formulas = defFormulas();             // live, user-editable
+
+        let cfg = clone(S2_BASELINE);
+        let sortKey = 'OVR', sortDir = -1;
+        let deltaMetric = 'OVR';
+
+        // fixed baseline (current S2 method + default formulas): per-stat values + OVR rank, for movement deltas
+        const baseline = {};
+        (function () {
+            const bp = compute(clone(S2_BASELINE), DEFAULT_FORMULAS);
+            const rk = {}; [...bp].sort((a, b) => b.OVR - a.OVR).forEach((p, i) => rk[p.name] = i + 1);
+            bp.forEach(p => baseline[p.name] = { SHO: p.SHO, AST: p.AST, PAS: p.PAS, DEF: p.DEF, OVR: p.OVR, rank: rk[p.name] });
+        })();
+
+        // change of the selected metric vs the S2 baseline (positive = "better": higher stat / higher up the ranking)
+        function deltaOf(p, curRank) {
+            const b = baseline[p.name];
+            return deltaMetric === 'pos' ? (b.rank - curRank[p.name]) : (p[deltaMetric] - b[deltaMetric]);
+        }
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        const tbody = document.getElementById('tbody');
+
+        function render() {
+            const players = compute(cfg, formulas);
+            const curRank = {}; [...players].sort((a, b) => b.OVR - a.OVR).forEach((p, i) => curRank[p.name] = i + 1);
+
+            const sorted = [...players].sort((a, b) => {
+                if (sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
+                if (sortKey === 'delta') return sortDir * (deltaOf(a, curRank) - deltaOf(b, curRank));
+                return sortDir * (a[sortKey] - b[sortKey]);
+            });
+            tbody.innerHTML = sorted.map((p, i) => {
+                const d = deltaOf(p, curRank);
+                const dCls = d > 0 ? 'up' : d < 0 ? 'down' : 'same';
+                const dTxt = d > 0 ? '▲ +' + d : d < 0 ? '▼ ' + d : '–';
+                return `<tr>
+                    <td class="col-rank">${i + 1}</td>
+                    <td class="col-player tier-${p.rarity}">${p.name}<span class="team">${p.team}</span></td>
+                    <td class="stat">${p.SHO}</td>
+                    <td class="stat">${p.AST}</td>
+                    <td class="stat">${p.PAS}</td>
+                    <td class="stat">${p.DEF}</td>
+                    <td class="ovr tier-${p.rarity}">${p.OVR}</td>
+                    <td class="delta ${dCls}">${dTxt}</td>
+                </tr>`;
+            }).join('');
+
+            // sort header highlight
+            document.querySelectorAll('.rtable thead th').forEach(th => {
+                th.classList.remove('sorted');
+                const a = th.querySelector('.arr'); if (a) a.remove();
+                if (th.dataset.sort === sortKey) {
+                    th.classList.add('sorted');
+                    const s = document.createElement('span'); s.className = 'arr'; s.textContent = sortDir < 0 ? ' ▼' : ' ▲';
+                    th.appendChild(s);
+                }
+            });
+        }
+
+        // ============================================================
+        // CONTROLS
+        // ============================================================
+        function buildWeights() {
+            document.getElementById('weights').innerHTML = STAT_KEYS.map(s =>
+                `<div class="weight-row">
+                    <span class="wlabel">${s}</span>
+                    <input type="range" min="0" max="60" step="1" data-w="${s}" value="${cfg.weights[s]}">
+                    <span class="wpct" id="wpct-${s}"></span>
+                 </div>`).join('');
+            document.querySelectorAll('[data-w]').forEach(inp => inp.addEventListener('input', () => {
+                cfg.weights[inp.dataset.w] = parseFloat(inp.value) || 0;
+                updateWeightPcts(); render();
+            }));
+        }
+        function updateWeightPcts() {
+            const w = normW(cfg.weights);
+            STAT_KEYS.forEach(s => document.getElementById('wpct-' + s).textContent = Math.round(w[s] * 100) + '%');
+        }
+
+        // ---- stat formula editors ----
+        const fc = document.getElementById('formulas');
+        function termsHTML(stat) {
+            return formulas[stat].terms.map((t, i) => `
+                <div class="term-row">
+                    <select class="t-stat" data-i="${i}">${STAT_TOKENS.map(tok => `<option value="${tok}"${tok === t.stat ? ' selected' : ''}>${STAT_LABELS[tok]}</option>`).join('')}</select>
+                    <span class="t-x">×</span>
+                    <input type="number" class="t-w" data-i="${i}" step="0.5" value="${t.weight}">
+                    <button class="t-del" data-i="${i}" title="remove">✕</button>
+                </div>`).join('');
+        }
+        function summaryText(stat) { const f = formulas[stat]; return f.advanced ? (f.expr || structuredExpr(f)) : structuredExpr(f); }
+        function statBlockHTML(stat) {
+            const f = formulas[stat];
+            return `<div class="formula-stat${f.advanced ? ' adv' : ''}" data-stat="${stat}">
+                <div class="formula-head"><span class="fname">${stat}</span><span class="fsummary" id="fsum-${stat}">${summaryText(stat)}</span><span class="fcaret">▸</span></div>
+                <div class="formula-body">
+                    <div class="struct">
+                        <div class="terms">${termsHTML(stat)}</div>
+                        <button class="add-term">+ add stat</button>
+                        <div class="norm-row">÷&nbsp;<select class="t-div">
+                            <option value="pp"${f.divide === 'pp' ? ' selected' : ''}>per period</option>
+                            <option value="gp"${f.divide === 'gp' ? ' selected' : ''}>per game</option>
+                            <option value="none"${f.divide === 'none' ? ' selected' : ''}>nothing (raw total)</option>
+                        </select></div>
+                    </div>
+                    <label class="adv-row"><input type="checkbox" class="t-adv"${f.advanced ? ' checked' : ''}> advanced formula
+                        <span class="info-i" tabindex="0">i<span class="tip">Type any expression with stat codes and + − × ÷ ( ). Available: g a pa sa sv sh blk pas pts sc cr gp pp. Overrides the builder above.</span></span>
+                    </label>
+                    <div class="adv-wrap"><input type="text" class="t-expr" spellcheck="false" value="${(f.expr || structuredExpr(f))}"><span class="t-status"></span></div>
+                </div>
+            </div>`;
+        }
+        function buildFormulas() { fc.innerHTML = ['SHO', 'AST', 'PAS', 'DEF'].map(statBlockHTML).join(''); }
+        function refreshSummary(stat) { document.getElementById('fsum-' + stat).textContent = summaryText(stat); }
+        function renderTerms(stat) { fc.querySelector(`.formula-stat[data-stat="${stat}"] .terms`).innerHTML = termsHTML(stat); }
+        function applyExpr(stat, txt, wrap) {
+            const f = formulas[stat]; f.expr = txt;
+            const status = wrap.querySelector('.t-status');
+            try { f.compiled = compileExpr(txt); status.textContent = '✓'; status.className = 't-status ok'; refreshSummary(stat); render(); }
+            catch (err) { status.textContent = '✕ ' + err.message; status.className = 't-status err'; }
+        }
+        function setAdvanced(stat, on) {
+            const f = formulas[stat]; f.advanced = on;
+            const wrap = fc.querySelector(`.formula-stat[data-stat="${stat}"]`);
+            wrap.classList.toggle('adv', on);
+            if (on) { f.expr = structuredExpr(f); wrap.querySelector('.t-expr').value = f.expr; applyExpr(stat, f.expr, wrap); }
+            else { refreshSummary(stat); render(); }
+        }
+        fc.addEventListener('click', e => {
+            const wrap = e.target.closest('.formula-stat'); if (!wrap) return; const stat = wrap.dataset.stat;
+            if (e.target.closest('.info-i')) return;
+            if (e.target.closest('.formula-head')) { wrap.classList.toggle('open'); return; }
+            if (e.target.classList.contains('add-term')) { formulas[stat].terms.push({ stat: 'g', weight: 1 }); renderTerms(stat); refreshSummary(stat); render(); }
+            else if (e.target.classList.contains('t-del')) { formulas[stat].terms.splice(+e.target.dataset.i, 1); if (!formulas[stat].terms.length) formulas[stat].terms.push({ stat: 'g', weight: 1 }); renderTerms(stat); refreshSummary(stat); render(); }
+        });
+        fc.addEventListener('change', e => {
+            const wrap = e.target.closest('.formula-stat'); if (!wrap) return; const stat = wrap.dataset.stat;
+            if (e.target.classList.contains('t-stat')) { formulas[stat].terms[+e.target.dataset.i].stat = e.target.value; refreshSummary(stat); render(); }
+            else if (e.target.classList.contains('t-div')) { formulas[stat].divide = e.target.value; refreshSummary(stat); render(); }
+            else if (e.target.classList.contains('t-adv')) { setAdvanced(stat, e.target.checked); }
+        });
+        fc.addEventListener('input', e => {
+            const wrap = e.target.closest('.formula-stat'); if (!wrap) return; const stat = wrap.dataset.stat;
+            if (e.target.classList.contains('t-w')) { formulas[stat].terms[+e.target.dataset.i].weight = parseFloat(e.target.value) || 0; refreshSummary(stat); render(); }
+            else if (e.target.classList.contains('t-expr')) { applyExpr(stat, e.target.value, wrap); }
+        });
+
+        function syncUI() {
+            // method
+            document.querySelectorAll('#methodSeg button').forEach(b => b.classList.toggle('active', b.dataset.method === cfg.method));
+            const isS1 = cfg.method === 'S1';
+            document.getElementById('methodNote').textContent = isS1
+                ? 'Season 1: sub-10-period players are capped at 69 (Silver max). Confidence / shrinkage don’t apply.'
+                : 'Season 2 (default): small samples handled by confidence below. No hard cap.';
+            // sample-size controls (disabled under S1)
+            document.getElementById('confRow').classList.toggle('disabled', isS1);
+            document.getElementById('confParam').classList.toggle('disabled', isS1);
+            document.getElementById('shrinkRow').classList.toggle('disabled', isS1);
+            document.getElementById('shrinkParam').classList.toggle('disabled', isS1);
+            document.getElementById('formulaSection').classList.toggle('disabled', isS1);
+            document.getElementById('confOn').checked = cfg.confidence.on;
+            document.getElementById('confPP').value = cfg.confidence.pp;
+            document.getElementById('shrinkOn').checked = cfg.shrinkage.on;
+            document.getElementById('shrinkK').value = cfg.shrinkage.k;
+            document.getElementById('specOn').checked = cfg.specialist.on;
+            document.getElementById('specThr').value = cfg.specialist.threshold;
+            document.querySelectorAll('[data-w]').forEach(inp => inp.value = cfg.weights[inp.dataset.w]);
+            updateWeightPcts();
+        }
+
+        document.querySelectorAll('#methodSeg button').forEach(b => b.addEventListener('click', () => {
+            cfg.method = b.dataset.method;
+            syncUI(); render();
+        }));
+        document.getElementById('confOn').addEventListener('change', e => { cfg.confidence.on = e.target.checked; render(); });
+        document.getElementById('confPP').addEventListener('input', e => { cfg.confidence.pp = Math.max(1, parseFloat(e.target.value) || 1); render(); });
+        document.getElementById('shrinkOn').addEventListener('change', e => { cfg.shrinkage.on = e.target.checked; render(); });
+        document.getElementById('shrinkK').addEventListener('input', e => { cfg.shrinkage.k = Math.max(0, parseFloat(e.target.value) || 0); render(); });
+        document.getElementById('specOn').addEventListener('change', e => { cfg.specialist.on = e.target.checked; render(); });
+        document.getElementById('specThr').addEventListener('input', e => { cfg.specialist.threshold = Math.max(0, parseFloat(e.target.value) || 0); render(); });
+
+        document.querySelectorAll('.rtable thead th[data-sort]').forEach(th => th.addEventListener('click', (e) => {
+            if (e.target.closest('select, .info-i')) return; // dropdown / info icon shouldn't trigger a sort
+            const k = th.dataset.sort;
+            if (sortKey === k) sortDir *= -1;
+            else { sortKey = k; sortDir = (k === 'name') ? 1 : -1; }
+            render();
+        }));
+
+        document.getElementById('deltaMetric').addEventListener('change', e => { deltaMetric = e.target.value; render(); });
+
+        document.getElementById('resetBtn').addEventListener('click', () => { cfg = clone(S2_BASELINE); formulas = defFormulas(); buildFormulas(); syncUI(); render(); });
+
+        // init
+        buildWeights();
+        buildFormulas();
+        syncUI();
+        render();
+    </script>
+</body>
+
+</html>

@@ -1,2 +1,5 @@
 # Internal project docs — not for the repo
 PROJECT_DOCS.md
+
+# Claude Code local config
+.claude/

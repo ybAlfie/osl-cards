@@ -621,10 +621,10 @@
                     <div class="struct">
                         <div class="terms">${termsHTML(stat)}</div>
                         <button class="add-term">+ add stat</button>
-                        <div class="norm-row">÷&nbsp;<select class="t-div">
-                            <option value="pp"${f.divide === 'pp' ? ' selected' : ''}>per period</option>
-                            <option value="gp"${f.divide === 'gp' ? ' selected' : ''}>per game</option>
-                            <option value="none"${f.divide === 'none' ? ' selected' : ''}>nothing (raw total)</option>
+                        <div class="norm-row">Divide by&nbsp;<select class="t-div">
+                            <option value="pp"${f.divide === 'pp' ? ' selected' : ''}>periods played</option>
+                            <option value="gp"${f.divide === 'gp' ? ' selected' : ''}>games played</option>
+                            <option value="none"${f.divide === 'none' ? ' selected' : ''}>nothing (use totals)</option>
                         </select></div>
                     </div>
                     <label class="adv-row"><input type="checkbox" class="t-adv"${f.advanced ? ' checked' : ''}> advanced formula

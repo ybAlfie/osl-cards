@@ -1317,7 +1317,8 @@
                 <div class="form-group">
                     <label>Season</label>
                     <select id="seasonSelect" style="width:100%;padding:0.7rem 1rem;background:var(--navy-deep);border:1px solid rgba(79,195,247,0.15);border-radius:8px;color:var(--text-primary);font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:500;cursor:pointer;">
-                        <option value="DS2" selected>Draft Season 2</option>
+                        <option value="DS3" selected>Draft Season 3</option>
+                        <option value="DS2">Draft Season 2</option>
                         <option value="DS1">Draft Season 1</option>
                         <option value="DS1F">Draft Season 1 Finals</option>
                     </select>
@@ -1394,7 +1395,7 @@
                             <!-- Rating + meta -->
                             <div class="card-top-left" id="cardTop">
                                 <div class="card-overall" id="cardOverall">?</div>
-                                <div class="card-season" id="cardSeasonLabel">Draft S2</div>
+                                <div class="card-season" id="cardSeasonLabel">Draft S3</div>
                                 <img src="assests/logo.png" alt="OSL" class="card-logo">
                             </div>
 
@@ -1492,14 +1493,14 @@
             </div>
 
             <!-- Season 2: sample-size confidence -->
-            <div class="info-season" data-season="DS2">
+            <div class="info-season" data-season="DS2 DS3">
                 <div class="info-divider"></div>
 
                 <div class="info-section">
-                    <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
+                    <div class="info-section-title">Sample-Size Confidence (Season 2+)</div>
                     <div class="info-note">
                         A player's stats are scaled toward the baseline until they've played enough, reaching full
-                        credit at <strong>10+ periods</strong>. This prevents small sample sizes inflating scores.
+                        credit at <strong><span class="conf-pp">10</span>+ periods</strong>. This prevents small sample sizes inflating scores.
                     </div>
                 </div>
             </div>
@@ -1537,6 +1538,7 @@
     <script src="DS1_Draft_Stats.js"></script>
     <script src="DS1_Draft_Finals_Stats.js"></script>
     <script src="DS2_Draft_Stats.js"></script>
+    <script src="DS3_Draft_Stats.js"></script>
     <script>
         // ========================================
         // DATA & SCORING ENGINE
@@ -1691,8 +1693,8 @@
          * interactive "tweak the formula" page rather than the default scoring.
          * Takes raw player objects (g/a/pas/sv/blk/pp).
          */
-        const S2_CONF_PP = 10;  // periods needed before a player's stats count at full value
-        function computeScoresS2(players) {
+        const S2_CONF_PP = 10;  // default periods needed before a player's stats count at full value (per-season override: confPP)
+        function computeScoresS2(players, confPP = S2_CONF_PP) {
             const S = ['SHO','AST','PAS','DEF'];
 
             // 1. Per-period rates (DEF = saves*2 + blocks, matching the other seasons)
@@ -1710,7 +1712,7 @@
             // 3. Sample-size confidence: scale each stat toward 50 for thin samples
             //    (full credit at CONF_PP periods). This is the only small-sample control.
             players.forEach(p => {
-                const conf = Math.min(p.pp / S2_CONF_PP, 1);
+                const conf = Math.min(p.pp / confPP, 1);
                 S.forEach(s => { p[s] = Math.round(50 + (p[s] - 50) * conf); });
             });
 
@@ -1735,15 +1737,16 @@
 
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
-            DS2:  { data: STATS_DATA_S2,      seasonHTML: 'Draft S2',          useCustomCards: false },
+            DS3:  { data: STATS_DATA_S3,      seasonHTML: 'Draft S3',          useCustomCards: false, engine: 'S2', confPP: 15 },  // fewer games played -> stricter
+            DS2:  { data: STATS_DATA_S2,      seasonHTML: 'Draft S2',          useCustomCards: false, engine: 'S2' },
             DS1:  { data: STATS_DATA,         seasonHTML: 'Draft S1',          useCustomCards: true,  customDir: 'customcards_season1' },
             DS1F: { data: STATS_DATA_FINALS,  seasonHTML: 'Draft S1<br>Finals', useCustomCards: false }
         };
 
-        let currentSeason = 'DS2';
+        let currentSeason = 'DS3';
 
         // Compute all scores on load
-        let scoredPlayers = computeScoresS2(STATS_DATA_S2.players.map(p=>({...p})));
+        let scoredPlayers = computeScoresS2(STATS_DATA_S3.players.map(p=>({...p})), SEASON_CONFIGS.DS3.confPP);
 
         // Build lookup by name (case-insensitive)
         let playerLookup = {};
@@ -1754,8 +1757,8 @@
         function loadSeason(seasonKey) {
             currentSeason = seasonKey;
             const cfg = SEASON_CONFIGS[seasonKey];
-            if (seasonKey === 'DS2') {
-                scoredPlayers = computeScoresS2(cfg.data.players.map(p=>({...p})));
+            if (cfg.engine === 'S2') {
+                scoredPlayers = computeScoresS2(cfg.data.players.map(p=>({...p})), cfg.confPP);
             } else if (seasonKey === 'DS1F') {
                 scoredPlayers = computeScoresNoCap(computePerPeriod(cfg.data.players.map(p=>({...p}))));
             } else {
@@ -1930,8 +1933,9 @@
         // Show the scoring explainer that matches the current season
         function updateInfoSeason(season) {
             document.querySelectorAll('#infoOverlay .info-season').forEach(el => {
-                el.style.display = (el.dataset.season === season) ? 'block' : 'none';
+                el.style.display = el.dataset.season.split(' ').includes(season) ? 'block' : 'none';
             });
+            document.querySelectorAll('#infoOverlay .conf-pp').forEach(el => el.textContent = SEASON_CONFIGS[season].confPP || S2_CONF_PP);
         }
         updateInfoSeason(currentSeason);
 

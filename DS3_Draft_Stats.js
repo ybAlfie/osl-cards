@@ -1,0 +1,35 @@
+const STATS_DATA_S3 = {
+    season: "Draft S3",
+    // pa = primary assists, sa = secondary assists, sc = league Score metric,
+    // pts = points (g+a), cr = conversion rate % (g/sh). a = pa + sa.
+    players: [
+        { name: "yenakis", team: "City Boys", gp: 12, pp: 36, g: 49, a: 33, sv: 40, sh: 90, blk: 88, pas: 296, pa: 27, sa: 6, sc: 12415, pts: 82, cr: 54.44 },
+        { name: "ended", team: "City Boys", gp: 12, pp: 36, g: 36, a: 32, sv: 24, sh: 97, blk: 86, pas: 289, pa: 27, sa: 5, sc: 10525, pts: 68, cr: 37.11 },
+        { name: "silly13sausage", team: "Peppa's Sausage Palace", gp: 12, pp: 36, g: 23, a: 38, sv: 47, sh: 65, blk: 130, pas: 247, pa: 25, sa: 13, sc: 9815, pts: 61, cr: 35.38 },
+        { name: "Turgulu", team: "Chicken and Cheese", gp: 11, pp: 32, g: 35, a: 26, sv: 34, sh: 73, blk: 75, pas: 221, pa: 23, sa: 3, sc: 9365, pts: 61, cr: 47.95 },
+        { name: "Benny", team: "Joey Fan Club", gp: 12, pp: 36, g: 38, a: 27, sv: 17, sh: 67, blk: 78, pas: 329, pa: 25, sa: 2, sc: 9260, pts: 65, cr: 56.72 },
+        { name: "Liebe", team: "Chicken and Cheese", gp: 12, pp: 36, g: 33, a: 27, sv: 20, sh: 68, blk: 66, pas: 260, pa: 19, sa: 8, sc: 8770, pts: 60, cr: 48.53 },
+        { name: "zuza", team: "Joey Fan Club", gp: 12, pp: 36, g: 26, a: 23, sv: 20, sh: 47, blk: 71, pas: 248, pa: 17, sa: 6, sc: 7255, pts: 49, cr: 55.32 },
+        { name: "Mayn", team: "Farting Marshmellows", gp: 12, pp: 36, g: 21, a: 21, sv: 39, sh: 51, blk: 55, pas: 318, pa: 15, sa: 6, sc: 7240, pts: 42, cr: 41.18 },
+        { name: "Haelnorr", team: "No Idea", gp: 12, pp: 36, g: 33, a: 13, sv: 12, sh: 67, blk: 50, pas: 278, pa: 8, sa: 5, sc: 7150, pts: 46, cr: 49.25 },
+        { name: "Moses", team: "No Idea", gp: 12, pp: 36, g: 10, a: 30, sv: 43, sh: 32, blk: 107, pas: 240, pa: 27, sa: 3, sc: 7000, pts: 40, cr: 31.25 },
+        { name: "mellow", team: "Farting Marshmellows", gp: 12, pp: 36, g: 25, a: 18, sv: 18, sh: 59, blk: 42, pas: 364, pa: 15, sa: 3, sc: 6825, pts: 43, cr: 42.37 },
+        { name: "jhili", team: "Farting Marshmellows", gp: 12, pp: 36, g: 18, a: 25, sv: 26, sh: 40, blk: 91, pas: 367, pa: 16, sa: 9, sc: 6780, pts: 43, cr: 45.00 },
+        { name: "alfie", team: "Alfie and the Alfinators", gp: 12, pp: 35, g: 17, a: 10, sv: 59, sh: 37, blk: 94, pas: 173, pa: 7, sa: 3, sc: 6665, pts: 27, cr: 45.95 },
+        { name: "zenonix", team: "Joey Fan Club", gp: 11, pp: 32, g: 17, a: 18, sv: 39, sh: 37, blk: 78, pas: 210, pa: 12, sa: 6, sc: 6345, pts: 35, cr: 45.95 },
+        { name: "NashTwentyTwo", team: "No Idea", gp: 11, pp: 33, g: 25, a: 19, sv: 7, sh: 50, blk: 54, pas: 239, pa: 18, sa: 1, sc: 6280, pts: 44, cr: 50.00 },
+        { name: "PFC", team: "Peppa's Sausage Palace", gp: 12, pp: 28, g: 19, a: 20, sv: 14, sh: 38, blk: 64, pas: 192, pa: 18, sa: 2, sc: 5850, pts: 39, cr: 50.00 },
+        { name: "MassiveLegend", team: "Chicken and Cheese", gp: 12, pp: 29, g: 15, a: 23, sv: 24, sh: 33, blk: 54, pas: 164, pa: 19, sa: 4, sc: 5810, pts: 38, cr: 45.45 },
+        { name: "Daddy Kermit", team: "Peppa's Sausage Palace", gp: 12, pp: 28, g: 29, a: 10, sv: 9, sh: 52, blk: 21, pas: 204, pa: 8, sa: 2, sc: 5605, pts: 39, cr: 55.77 },
+        { name: "JDB", team: "City Boys", gp: 10, pp: 30, g: 18, a: 24, sv: 9, sh: 32, blk: 55, pas: 193, pa: 21, sa: 3, sc: 5565, pts: 42, cr: 56.25 },
+        { name: "Dandy", team: "Alfie and the Alfinators", gp: 12, pp: 35, g: 17, a: 16, sv: 10, sh: 33, blk: 69, pas: 211, pa: 14, sa: 2, sc: 5045, pts: 33, cr: 51.52 },
+        { name: "Kyle", team: "Alfie and the Alfinators", gp: 8, pp: 21, g: 7, a: 9, sv: 46, sh: 15, blk: 40, pas: 105, pa: 9, sa: 0, sc: 4015, pts: 16, cr: 46.67 },
+        { name: "Spar", team: "Chicken and Cheese", gp: 7, pp: 11, g: 13, a: 5, sv: 7, sh: 18, blk: 21, pas: 77, pa: 4, sa: 1, sc: 2645, pts: 18, cr: 72.22 },
+        { name: "Gecko", team: "Free Agent", gp: 4, pp: 11, g: 9, a: 4, sv: 13, sh: 15, blk: 32, pas: 61, pa: 4, sa: 0, sc: 2515, pts: 13, cr: 60.00 },
+        { name: "ARC-4862", team: "Peppa's Sausage Palace", gp: 8, pp: 16, g: 8, a: 9, sv: 9, sh: 13, blk: 16, pas: 106, pa: 7, sa: 2, sc: 2435, pts: 17, cr: 61.54 },
+        { name: "Chebs", team: "Free Agent", gp: 2, pp: 6, g: 2, a: 4, sv: 2, sh: 5, blk: 7, pas: 28, pa: 3, sa: 1, sc: 845, pts: 6, cr: 40.00 },
+        { name: "Forge", team: "Alfie and the Alfinators", gp: 3, pp: 6, g: 2, a: 2, sv: 2, sh: 7, blk: 16, pas: 38, pa: 2, sa: 0, sc: 755, pts: 4, cr: 28.57 },
+        { name: "Kaidan", team: "Joey Fan Club", gp: 2, pp: 4, g: 1, a: 1, sv: 4, sh: 1, blk: 9, pas: 14, pa: 1, sa: 0, sc: 475, pts: 2, cr: 100.00 },
+        { name: "Nananana", team: "Free Agent", gp: 1, pp: 3, g: 0, a: 1, sv: 3, sh: 1, blk: 10, pas: 15, pa: 1, sa: 0, sc: 395, pts: 1, cr: 0 }
+    ]
+};

@@ -195,7 +195,8 @@
             <div class="control-group">
                 <span class="control-label">Season:</span>
                 <select id="seasonSelect">
-                    <option value="DS2" selected>Draft Season 2</option>
+                    <option value="DS3" selected>Draft Season 3</option>
+                    <option value="DS2">Draft Season 2</option>
                     <option value="DS1">Draft Season 1</option>
                     <option value="DS1F">Draft Season 1 Finals</option>
                 </select>
@@ -238,11 +239,11 @@
                 <div class="info-section-title">Specialist Boost</div>
                 <div class="info-note">If a player's top stat is <strong>15+ points above</strong> their other stats, they receive an overall boost. This prevents highly specialised players (e.g. a dominant defender) from being undervalued by a weighted average.</div>
             </div>
-            <div class="info-season" data-season="DS2">
+            <div class="info-season" data-season="DS2 DS3">
                 <div class="info-divider"></div>
                 <div class="info-section">
-                    <div class="info-section-title">Sample-Size Confidence (Season 2)</div>
-                    <div class="info-note">A player's stats are scaled toward the baseline until they've played enough, reaching full credit at <strong>10+ periods</strong>. This prevents small sample sizes inflating scores.</div>
+                    <div class="info-section-title">Sample-Size Confidence (Season 2+)</div>
+                    <div class="info-note">A player's stats are scaled toward the baseline until they've played enough, reaching full credit at <strong><span class="conf-pp">10</span>+ periods</strong>. This prevents small sample sizes inflating scores.</div>
                 </div>
             </div>
             <div class="info-season" data-season="DS1">
@@ -265,6 +266,7 @@
     <script src="DS1_Draft_Stats.js"></script>
     <script src="DS1_Draft_Finals_Stats.js"></script>
     <script src="DS2_Draft_Stats.js"></script>
+    <script src="DS3_Draft_Stats.js"></script>
     <script>
         // === SCORING ENGINE (same as matchup.html) ===
         const WEIGHTS={SHO:0.30,AST:0.20,PAS:0.20,DEF:0.30}, MIN_PERIODS=10, SPECIALIST_THRESHOLD=15, SPECIALIST_BLEND=0.3;
@@ -295,11 +297,11 @@
         // percentile rank of the confidence-adjusted weighted stats, so overall always follows the visible stats.
         // (Earlier "shrinkage" toward the league rate was dropped — saved for the interactive page.)
         const S2_CONF_PP=10;
-        function computeScoresS2(players){
+        function computeScoresS2(players,confPP=S2_CONF_PP){
             const S=['SHO','AST','PAS','DEF'];
             players.forEach(p=>{const pp=p.pp||1;p.rate={SHO:p.g/pp,AST:p.a/pp,PAS:p.pas/pp,DEF:(p.sv*2+p.blk)/pp};});
             S.forEach(s=>{const pc=percentileRank(players.map(p=>p.rate[s]));players.forEach((p,i)=>{p[s]=Math.round(50+pc[i]*49);});});
-            players.forEach(p=>{const c=Math.min(p.pp/S2_CONF_PP,1);S.forEach(s=>{p[s]=Math.round(50+(p[s]-50)*c);});});
+            players.forEach(p=>{const c=Math.min(p.pp/confPP,1);S.forEach(s=>{p[s]=Math.round(50+(p[s]-50)*c);});});
             players.forEach(p=>{p.baseWeighted=p.SHO*WEIGHTS.SHO+p.AST*WEIGHTS.AST+p.PAS*WEIGHTS.PAS+p.DEF*WEIGHTS.DEF;});
             players.forEach(p=>{const sv=[p.SHO,p.AST,p.PAS,p.DEF],t=Math.max(...sv),ao=(sv.reduce((a,b)=>a+b,0)-t)/3,g=t-ao;p.boostedWeighted=g>=SPECIALIST_THRESHOLD?p.baseWeighted+(t-p.baseWeighted)*Math.min((g-SPECIALIST_THRESHOLD)/20,1)*SPECIALIST_BLEND:p.baseWeighted;});
             const op=percentileRank(players.map(p=>p.boostedWeighted));players.forEach((p,i)=>{p.OVR=Math.round(50+op[i]*49);p.rarity=p.OVR>=80?'gold':p.OVR>=65?'silver':'bronze';});
@@ -308,19 +310,20 @@
 
         // === SEASON DATA ===
         const SEASON_CONFIGS = {
-            DS2:  { data: STATS_DATA_S2,      label: 'Draft S2',   seasonHTML: 'Draft S2',          useCustomCards: false },
+            DS3:  { data: STATS_DATA_S3,      label: 'Draft S3',   seasonHTML: 'Draft S3',          useCustomCards: false, engine: 'S2', confPP: 15 },  // fewer games played -> stricter
+            DS2:  { data: STATS_DATA_S2,      label: 'Draft S2',   seasonHTML: 'Draft S2',          useCustomCards: false, engine: 'S2' },
             DS1:  { data: STATS_DATA,         label: 'Draft S1',   seasonHTML: 'Draft S1',          useCustomCards: true,  customDir: 'customcards_season1' },
             DS1F: { data: STATS_DATA_FINALS,  label: 'DS1 Finals', seasonHTML: 'Draft S1<br>Finals', useCustomCards: false }
         };
 
-        let currentSeason = 'DS2';
-        let scoredPlayers = computeScoresS2(STATS_DATA_S2.players.map(p=>({...p})));
+        let currentSeason = 'DS3';
+        let scoredPlayers = computeScoresS2(STATS_DATA_S3.players.map(p=>({...p})), SEASON_CONFIGS.DS3.confPP);
 
         function loadSeason(seasonKey) {
             currentSeason = seasonKey;
             const cfg = SEASON_CONFIGS[seasonKey];
-            if (seasonKey === 'DS2') {
-                scoredPlayers = computeScoresS2(cfg.data.players.map(p=>({...p})));
+            if (cfg.engine === 'S2') {
+                scoredPlayers = computeScoresS2(cfg.data.players.map(p=>({...p})), cfg.confPP);
             } else if (seasonKey === 'DS1F') {
                 scoredPlayers = computeScoresNoCap(computePerPeriod(cfg.data.players.map(p=>({...p}))));
             } else {
@@ -455,8 +458,9 @@
         // Show the scoring explainer that matches the current season
         function updateInfoSeason(season) {
             document.querySelectorAll('#infoOverlay .info-season').forEach(el => {
-                el.style.display = (el.dataset.season === season) ? 'block' : 'none';
+                el.style.display = el.dataset.season.split(' ').includes(season) ? 'block' : 'none';
             });
+            document.querySelectorAll('#infoOverlay .conf-pp').forEach(el => el.textContent = SEASON_CONFIGS[season].confPP || S2_CONF_PP);
         }
         updateInfoSeason(currentSeason);
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSL Rating Calculator — Draft S2</title>
+    <title>OSL Rating Calculator — Draft</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap"
@@ -289,7 +289,7 @@
     <div class="container">
         <header class="header">
             <h1>RATING <span>CALCULATOR</span></h1>
-            <p>Experiment with how Draft Season 2 ratings are calculated</p>
+            <p>Experiment with how Draft ratings are calculated</p>
             <div class="nav-btns">
                 <a href="index.html">Card Generator</a>
                 <a href="matchup.html">Team Matchup</a>
@@ -302,6 +302,14 @@
         <div class="calc-grid">
             <!-- ===== CONTROLS ===== -->
             <div class="panel">
+                <div class="ctrl-section">
+                    <div class="ctrl-title">Season Data</div>
+                    <div class="seg" id="dataSeg">
+                        <button data-season="DS3" class="active">Season 3</button>
+                        <button data-season="DS2">Season 2</button>
+                    </div>
+                </div>
+
                 <div class="ctrl-section">
                     <div class="ctrl-title">Rating Method</div>
                     <div class="seg" id="methodSeg">
@@ -320,7 +328,7 @@
                         <span class="info-i" tabindex="0">i<span class="tip">Players with few periods haven't proven themselves. Each player's stats are scaled toward the 50 baseline in proportion to periods played, reaching full value at the number below. Higher = stricter on small samples.<span class="fml">shown = 50 + (rank − 50) × min(PP ÷ N, 1)</span></span></span>
                     </div>
                     <div class="param" id="confParam">
-                        Full credit at <input type="number" id="confPP" min="1" max="60" value="10"> periods
+                        Full credit at <input type="number" id="confPP" min="1" max="60" value="15"> periods
                     </div>
 
                     <div class="toggle-row" id="shrinkRow">
@@ -399,6 +407,7 @@
     </div>
 
     <script src="DS2_Draft_Stats.js"></script>
+    <script src="DS3_Draft_Stats.js"></script>
     <script>
         // ============================================================
         // SCORING ENGINE
@@ -497,8 +506,13 @@
 
         function rarity(o) { return o >= 80 ? 'gold' : o >= 65 ? 'silver' : 'bronze'; }
 
+        // player data per season (picked with the "Season Data" buttons)
+        const DATASETS = { DS3: STATS_DATA_S3, DS2: STATS_DATA_S2 };
+        const CONF_PP = { DS3: 15, DS2: 10 };   // each season's default "full credit at" periods
+        let dataKey = 'DS3';
+
         function compute(cfg, F) {
-            const P = STATS_DATA_S2.players.map(p => ({ ...p }));
+            const P = DATASETS[dataKey].players.map(p => ({ ...p }));
             return cfg.method === 'S1' ? computeS1(P, cfg) : computeModern(P, cfg, F);
         }
 
@@ -506,7 +520,7 @@
         // STATE
         // ============================================================
         const DEFAULT_WEIGHTS = { SHO: 30, AST: 20, PAS: 20, DEF: 30 };
-        const S2_BASELINE = { method: 'S2', confidence: { on: true, pp: 10 }, shrinkage: { on: false, k: 10 }, weights: { ...DEFAULT_WEIGHTS }, specialist: { on: true, threshold: 15 } };
+        const S2_BASELINE = { method: 'S2', confidence: { on: true, pp: CONF_PP[dataKey] }, shrinkage: { on: false, k: 10 }, weights: { ...DEFAULT_WEIGHTS }, specialist: { on: true, threshold: 15 } };
         const clone = o => JSON.parse(JSON.stringify(o));
 
         // default stat formulas = the current Season 2 definitions
@@ -525,13 +539,15 @@
         let sortKey = 'OVR', sortDir = -1;
         let deltaMetric = 'OVR';
 
-        // fixed baseline (current S2 method + default formulas): per-stat values + OVR rank, for movement deltas
-        const baseline = {};
-        (function () {
+        // fixed baseline (current S2 method + default formulas) for the loaded season: per-stat values + OVR rank, for movement deltas
+        let baseline = {};
+        function buildBaseline() {
+            baseline = {};
             const bp = compute(clone(S2_BASELINE), DEFAULT_FORMULAS);
             const rk = {}; [...bp].sort((a, b) => b.OVR - a.OVR).forEach((p, i) => rk[p.name] = i + 1);
             bp.forEach(p => baseline[p.name] = { SHO: p.SHO, AST: p.AST, PAS: p.PAS, DEF: p.DEF, OVR: p.OVR, rank: rk[p.name] });
-        })();
+        }
+        buildBaseline();
 
         // change of the selected metric vs the S2 baseline (positive = "better": higher stat / higher up the ranking)
         function deltaOf(p, curRank) {
@@ -692,6 +708,12 @@
             updateWeightPcts();
         }
 
+        document.querySelectorAll('#dataSeg button').forEach(b => b.addEventListener('click', () => {
+            dataKey = b.dataset.season;
+            document.querySelectorAll('#dataSeg button').forEach(x => x.classList.toggle('active', x === b));
+            S2_BASELINE.confidence.pp = CONF_PP[dataKey]; cfg.confidence.pp = CONF_PP[dataKey];
+            buildBaseline(); syncUI(); render();
+        }));
         document.querySelectorAll('#methodSeg button').forEach(b => b.addEventListener('click', () => {
             cfg.method = b.dataset.method;
             syncUI(); render();
